@@ -70,7 +70,7 @@ func getConfig(a string) string {
 		fmt.Println("error", err)
 	}
 	if a == "url" {
-		var b = config.URL + "/api/"
+		var b = config.URL + "/api/admin/"
 		return b
 	} else if a == "secret" {
 		var b = config.Secret
