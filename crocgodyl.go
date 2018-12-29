@@ -468,8 +468,11 @@ func printJSON(b []byte) ([]byte, error) {
 }
 
 // GetServers returns all available servers.
-func GetServers() {
+func GetServers() ([]string, error) {
+	var servers []string
 	//Print response formated in json
 	b, _ := printJSON(queryPanel(config.PanelURL + "/api/application/servers"))
 	fmt.Printf("%s", b)
+
+	return servers, nil
 }
