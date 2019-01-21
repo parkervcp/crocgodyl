@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -22,29 +21,9 @@ const VERSION = "0.0.1-alpha"
 // ClientServers is the default all servers view for the client API.
 // GET this from the '/api/client' endpoint
 type ClientServers struct {
-	Object string `json:"object"`
-	Data   []struct {
-		Object     string `json:"object"`
-		Attributes struct {
-			ServerOwner bool   `json:"server_owner"`
-			Identifier  string `json:"identifier"`
-			UUID        string `json:"uuid"`
-			Name        string `json:"name"`
-			Description string `json:"description"`
-			Limits      struct {
-				Memory int `json:"memory"`
-				Swap   int `json:"swap"`
-				Disk   int `json:"disk"`
-				Io     int `json:"io"`
-				CPU    int `json:"cpu"`
-			} `json:"limits"`
-			FeatureLimits struct {
-				Databases   int `json:"databases"`
-				Allocations int `json:"allocations"`
-			} `json:"feature_limits"`
-		} `json:"attributes"`
-	} `json:"data"`
-	Meta struct {
+	Object       string         `json:"object"`
+	ClientServer []ClientServer `json:"data"`
+	Meta         struct {
 		Pagination struct {
 			Total       int           `json:"total"`
 			Count       int           `json:"count"`
@@ -119,28 +98,12 @@ type ClientServerPowerAction struct {
 
 // Application User API
 
-// PanelUsers is the struct for all the panel users.
+// Users is the struct for all the panel users.
 // GET this from the '/api/application/users` endpoint
-type PanelUsers struct {
+type Users struct {
 	Object string `json:"object"`
-	Data   []struct {
-		Object     string `json:"object"`
-		Attributes struct {
-			ID         int         `json:"id"`
-			ExternalID interface{} `json:"external_id"`
-			UUID       string      `json:"uuid"`
-			Username   string      `json:"username"`
-			Email      string      `json:"email"`
-			FirstName  string      `json:"first_name"`
-			LastName   string      `json:"last_name"`
-			Language   string      `json:"language"`
-			RootAdmin  bool        `json:"root_admin"`
-			TwoFa      bool        `json:"2fa"`
-			CreatedAt  time.Time   `json:"created_at"`
-			UpdatedAt  time.Time   `json:"updated_at"`
-		} `json:"attributes"`
-	} `json:"data"`
-	Meta struct {
+	User   []User `json:"data"`
+	Meta   struct {
 		Pagination struct {
 			Total       int           `json:"total"`
 			Count       int           `json:"count"`
@@ -152,9 +115,9 @@ type PanelUsers struct {
 	} `json:"meta"`
 }
 
-// PanelUser is the struct for all the panel users.
+// User is the struct for all the panel users.
 // GET this from the '/api/application/users/<user_ID>` endpoint
-type PanelUser struct {
+type User struct {
 	Object     string `json:"object"`
 	Attributes struct {
 		ID         int         `json:"id"`
@@ -185,9 +148,9 @@ type PanelUserEdit struct {
 	RootAdmin  bool   `json:"root_admin"`
 }
 
-// PanelUserCreateResponse is the struct for the response when creating a user.
+// UserCreateResponse is the struct for the response when creating a user.
 // POST this from the '/api/application/users/<user_ID>` endpoint
-type PanelUserCreateResponse struct {
+type UserCreateResponse struct {
 	Object     string `json:"object"`
 	Attributes struct {
 		ID         int         `json:"id"`
@@ -208,9 +171,9 @@ type PanelUserCreateResponse struct {
 	} `json:"meta"`
 }
 
-// PanelUserUpdateResponse is the struct for the response when editing a user.
+// UserUpdateResponse is the struct for the response when editing a user.
 // PATCH this from the '/api/application/users/<user_ID>` endpoint
-type PanelUserUpdateResponse struct {
+type UserUpdateResponse struct {
 	Object     string `json:"object"`
 	Attributes struct {
 		ID         int       `json:"id"`
@@ -233,18 +196,9 @@ type PanelUserUpdateResponse struct {
 // Locations is the struct for all the nodes added to the panel.
 // GET this from the '/api/application/locations` endpoint
 type Locations struct {
-	Object string `json:"object"`
-	Data   []struct {
-		Object     string `json:"object"`
-		Attributes struct {
-			ID        int       `json:"id"`
-			Short     string    `json:"short"`
-			Long      string    `json:"long"`
-			UpdatedAt time.Time `json:"updated_at"`
-			CreatedAt time.Time `json:"created_at"`
-		} `json:"attributes"`
-	} `json:"data"`
-	Meta struct {
+	Object   string     `json:"object"`
+	Location []Location `json:"data"`
+	Meta     struct {
 		Pagination struct {
 			Total       int           `json:"total"`
 			Count       int           `json:"count"`
@@ -301,31 +255,8 @@ type LocatioCreateResponse struct {
 // Nodes is the struct for all the nodes added to the panel.
 type Nodes struct {
 	Object string `json:"object"`
-	Data   []struct {
-		Object     string `json:"object"`
-		Attributes struct {
-			ID                 int       `json:"id"`
-			Public             bool      `json:"public"`
-			Name               string    `json:"name"`
-			Description        string    `json:"description"`
-			LocationID         int       `json:"location_id"`
-			Fqdn               string    `json:"fqdn"`
-			Scheme             string    `json:"scheme"`
-			BehindProxy        bool      `json:"behind_proxy"`
-			MaintenanceMode    bool      `json:"maintenance_mode"`
-			Memory             int       `json:"memory"`
-			MemoryOverallocate int       `json:"memory_overallocate"`
-			Disk               int       `json:"disk"`
-			DiskOverallocate   int       `json:"disk_overallocate"`
-			UploadSize         int       `json:"upload_size"`
-			DaemonListen       int       `json:"daemon_listen"`
-			DaemonSftp         int       `json:"daemon_sftp"`
-			DaemonBase         string    `json:"daemon_base"`
-			CreatedAt          time.Time `json:"created_at"`
-			UpdatedAt          time.Time `json:"updated_at"`
-		} `json:"attributes"`
-	} `json:"data"`
-	Meta struct {
+	Node   []Node `json:"data"`
+	Meta   struct {
 		Pagination struct {
 			Total       int           `json:"total"`
 			Count       int           `json:"count"`
@@ -410,6 +341,61 @@ type NodeEdit struct {
 	} `json:"throttle"`
 }
 
+// Servers is the struct for the servers on the panel.
+type Servers struct {
+	Object string   `json:"object"`
+	Server []Server `json:"data"`
+	Meta   struct {
+		Pagination struct {
+			Total       int           `json:"total"`
+			Count       int           `json:"count"`
+			PerPage     int           `json:"per_page"`
+			CurrentPage int           `json:"current_page"`
+			TotalPages  int           `json:"total_pages"`
+			Links       []interface{} `json:"links"`
+		} `json:"pagination"`
+	} `json:"meta"`
+}
+
+// Server is the struct for a server on the panel.
+type Server struct {
+	Object     string `json:"object"`
+	Attributes struct {
+		ID          int         `json:"id"`
+		ExternalID  interface{} `json:"external_id"`
+		UUID        string      `json:"uuid"`
+		Identifier  string      `json:"identifier"`
+		Name        string      `json:"name"`
+		Description string      `json:"description"`
+		Suspended   bool        `json:"suspended"`
+		Limits      struct {
+			Memory int `json:"memory"`
+			Swap   int `json:"swap"`
+			Disk   int `json:"disk"`
+			Io     int `json:"io"`
+			CPU    int `json:"cpu"`
+		} `json:"limits"`
+		FeatureLimits struct {
+			Databases   int `json:"databases"`
+			Allocations int `json:"allocations"`
+		} `json:"feature_limits"`
+		User       int         `json:"user"`
+		Node       int         `json:"node"`
+		Allocation int         `json:"allocation"`
+		Nest       int         `json:"nest"`
+		Egg        int         `json:"egg"`
+		Pack       interface{} `json:"pack"`
+		Container  struct {
+			StartupCommand string                 `json:"startup_command"`
+			Image          string                 `json:"image"`
+			Installed      bool                   `json:"installed"`
+			Environment    map[string]interface{} `json:"environment"`
+		} `json:"container"`
+		UpdatedAt time.Time `json:"updated_at"`
+		CreatedAt time.Time `json:"created_at"`
+	} `json:"attributes"`
+}
+
 var config crocConfig
 
 // crocgodyl structs
@@ -437,14 +423,14 @@ func New(panelURL string, clientToken string, appToken string) error {
 	return nil
 }
 
-func queryPanel(url string) []byte {
+func queryPanel(url string, token string) []byte {
 	//var for response body byte
 	var bodyBytes []byte
 	//http get json request
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", url, nil)
 	//Sets request header for the http request
-	req.Header.Add("Authorization", "Bearer "+"")
+	req.Header.Add("Authorization", "Bearer "+token)
 	//send request
 	resp, err := client.Do(req)
 	if err != nil {
@@ -457,6 +443,7 @@ func queryPanel(url string) []byte {
 	resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 	//Close response thread
 	defer resp.Body.Close()
+
 	//return byte structure
 	return bodyBytes
 }
@@ -468,11 +455,35 @@ func printJSON(b []byte) ([]byte, error) {
 }
 
 // GetServers returns all available servers.
-func GetServers() ([]string, error) {
-	var servers []string
-	//Print response formated in json
-	b, _ := printJSON(queryPanel(config.PanelURL + "/api/application/servers"))
-	fmt.Printf("%s", b)
+func GetServers() (Servers, error) {
+	var servers Servers
+
+	// set server infor from the panel
+	serverBytes := queryPanel(config.PanelURL+"/api/application/servers", config.AppToken)
+
+	// Unmarshal the bytes to a usable struct.
+	err := json.Unmarshal(serverBytes, &servers)
+
+	if err != nil {
+		return servers, err
+	}
 
 	return servers, nil
+}
+
+// GetNodes returns all available nodes.
+func GetNodes() (Nodes, error) {
+	var nodes Nodes
+
+	// set server infor from the panel
+	nodeBytes := queryPanel(config.PanelURL+"/api/application/nodes", config.AppToken)
+
+	// Unmarshal the bytes to a usable struct.
+	err := json.Unmarshal(nodeBytes, &nodes)
+
+	if err != nil {
+		return nodes, err
+	}
+
+	return nodes, nil
 }
