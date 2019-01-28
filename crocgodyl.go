@@ -223,7 +223,7 @@ type Location struct {
 	} `json:"attributes"`
 }
 
-// LocationEdit is the struct for the json when creating a location.
+// LocationEdit is the struct for the json when editing/creating a location.
 // GET this from the '/api/application/locations/<location_ID>` endpoint
 type LocationEdit struct {
 	Short string `json:"short"`
@@ -294,6 +294,26 @@ type Node struct {
 	} `json:"attributes"`
 }
 
+// NodeEdit is the struct for creating/editing a node for the panel.
+type NodeEdit struct {
+	Public             bool   `json:"public"`
+	Name               string `json:"name"`
+	Description        string `json:"description"`
+	LocationID         int    `json:"location_id"`
+	Fqdn               string `json:"fqdn"`
+	Scheme             string `json:"scheme"`
+	BehindProxy        bool   `json:"behind_proxy"`
+	MaintenanceMode    bool   `json:"maintenance_mode"`
+	Memory             int    `json:"memory"`
+	MemoryOverallocate int    `json:"memory_overallocate"`
+	Disk               int    `json:"disk"`
+	DiskOverallocate   int    `json:"disk_overallocate"`
+	UploadSize         int    `json:"upload_size"`
+	DaemonListen       int    `json:"daemon_listen"`
+	DaemonSftp         int    `json:"daemon_sftp"`
+	DaemonBase         string `json:"daemon_base"`
+}
+
 // NodeAllocations are the allocations for a single node.
 type NodeAllocations struct {
 	Object string `json:"object"`
@@ -317,28 +337,6 @@ type NodeAllocations struct {
 			Links       []interface{} `json:"links"`
 		} `json:"pagination"`
 	} `json:"meta"`
-}
-
-// NodeEdit is the struct for creating a node for the panel.
-// POST this to the '/api/application/users/` endpoint
-// PATCH this to the '/api/application/users/<userID>` endpoint
-type NodeEdit struct {
-	Name               string `json:"name"`
-	LocationID         string `json:"location_id"`
-	Fqdn               string `json:"fqdn"`
-	Scheme             string `json:"scheme"`
-	Memory             int    `json:"memory"`
-	MemoryOverallocate int    `json:"memory_overallocate"`
-	Disk               int    `json:"disk"`
-	DiskOverallocate   int    `json:"disk_overallocate"`
-	DaemonListen       string `json:"daemon_listen"`
-	DaemonSftp         string `json:"daemon_sftp"`
-	DaemonBase         string `json:"daemon_base"`
-	BehindProxy        string `json:"behind_proxy"`
-	Public             string `json:"public"`
-	Throttle           struct {
-		Enabled bool `json:"enabled"`
-	} `json:"throttle"`
 }
 
 // Servers is the struct for the servers on the panel.
@@ -396,15 +394,140 @@ type Server struct {
 	} `json:"attributes"`
 }
 
-var config crocConfig
+// ServerEdit is the struct for creating/editing a server for the panel.
+type ServerEdit struct {
+	Name        string   `json:"name"`
+	User        int      `json:"user"`
+	Egg         int      `json:"egg"`
+	DockerImage string   `json:"docker_image"`
+	Startup     string   `json:"startup"`
+	Environment []string `json:"environment"`
+	Limits      struct {
+		Memory int `json:"memory"`
+		Swap   int `json:"swap"`
+		Disk   int `json:"disk"`
+		Io     int `json:"io"`
+		CPU    int `json:"cpu"`
+	} `json:"limits"`
+	FeatureLimits struct {
+		Databases   int `json:"databases"`
+		Allocations int `json:"allocations"`
+	} `json:"feature_limits"`
+	Allocation struct {
+		Default int `json:"default"`
+	} `json:"allocation"`
+}
 
-// crocgodyl structs
+// Nests is the struct for the nests on the panel.
+type Nests struct {
+	Object string `json:"object"`
+	Nest   []Nest `json:"data"`
+	Meta   struct {
+		Pagination struct {
+			Total       int           `json:"total"`
+			Count       int           `json:"count"`
+			PerPage     int           `json:"per_page"`
+			CurrentPage int           `json:"current_page"`
+			TotalPages  int           `json:"total_pages"`
+			Links       []interface{} `json:"links"`
+		} `json:"pagination"`
+	} `json:"meta"`
+}
+
+// Nest is the struct for a nest on the panel.
+type Nest struct {
+	Object     string `json:"object"`
+	Attributes struct {
+		ID          int       `json:"id"`
+		UUID        string    `json:"uuid"`
+		Author      string    `json:"author"`
+		Name        string    `json:"name"`
+		Description string    `json:"description"`
+		CreatedAt   time.Time `json:"created_at"`
+		UpdatedAt   time.Time `json:"updated_at"`
+	} `json:"attributes"`
+}
+
+// Eggs is the struct for all eggs in a nest.
+type Eggs struct {
+	Object string `json:"object"`
+	Egg    []Egg  `json:"data"`
+}
+
+// Egg is the struct for an egg on the panel.
+type Egg struct {
+	Object     string `json:"object"`
+	Attributes struct {
+		ID          int    `json:"id"`
+		UUID        string `json:"uuid"`
+		Nest        int    `json:"nest"`
+		Author      string `json:"author"`
+		Description string `json:"description"`
+		DockerImage string `json:"docker_image"`
+		Config      struct {
+			Files struct {
+				ConfigYml struct {
+					Parser string `json:"parser"`
+					Find   struct {
+						Listeners0QueryEnabled bool   `json:"listeners[0].query_enabled"`
+						Listeners0QueryPort    string `json:"listeners[0].query_port"`
+						Listeners0Host         string `json:"listeners[0].host"`
+						ServersAddress         struct {
+							One27111  string `json:"127.1.1.1"`
+							Localhost string `json:"localhost"`
+						} `json:"servers.*.address"`
+					} `json:"find"`
+				} `json:"config.yml"`
+			} `json:"files"`
+			Startup struct {
+				Done            string   `json:"done"`
+				UserInteraction []string `json:"userInteraction"`
+			} `json:"startup"`
+			Stop string `json:"stop"`
+			Logs struct {
+				Custom   bool   `json:"custom"`
+				Location string `json:"location"`
+			} `json:"logs"`
+			Extends interface{} `json:"extends"`
+		} `json:"config"`
+		Startup string `json:"startup"`
+		Script  struct {
+			Privileged bool        `json:"privileged"`
+			Install    string      `json:"install"`
+			Entry      string      `json:"entry"`
+			Container  string      `json:"container"`
+			Extends    interface{} `json:"extends"`
+		} `json:"script"`
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+	} `json:"attributes"`
+}
+
+// ErrorResponse is the response from the panels for errors.
+type ErrorResponse struct {
+	Errors []struct {
+		Code   string `json:"code"`
+		Detail string `json:"detail"`
+		Source struct {
+			Field string `json:"field"`
+		} `json:"source"`
+	} `json:"errors"`
+}
+
+//
+// crocgodyl
+//
+var config crocConfig
 
 type crocConfig struct {
 	PanelURL    string
 	ClientToken string
 	AppToken    string
 }
+
+//
+// Application code
+//
 
 // New sets up the API interface with
 func New(panelURL string, clientToken string, appToken string) error {
@@ -423,19 +546,26 @@ func New(panelURL string, clientToken string, appToken string) error {
 	return nil
 }
 
-func queryPanel(url string, token string) []byte {
+func queryPanelAPI(endpoint string) ([]byte, error) {
 	//var for response body byte
 	var bodyBytes []byte
 	//http get json request
 	client := &http.Client{}
-	req, _ := http.NewRequest("GET", url, nil)
+	req, _ := http.NewRequest("GET", config.PanelURL+"/api/application/"+endpoint, nil)
 	//Sets request header for the http request
-	req.Header.Add("Authorization", "Bearer "+token)
+	req.Header.Add("Authorization", "Bearer "+config.AppToken)
 	//send request
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
+
+	if resp.StatusCode == 422 {
+		bodyBytes, _ = ioutil.ReadAll(resp.Body)
+		return bodyBytes, errors.New("422")
+	}
+
 	if resp.Body != nil {
 		bodyBytes, _ = ioutil.ReadAll(resp.Body)
 	}
@@ -445,7 +575,7 @@ func queryPanel(url string, token string) []byte {
 	defer resp.Body.Close()
 
 	//return byte structure
-	return bodyBytes
+	return bodyBytes, nil
 }
 
 func printJSON(b []byte) ([]byte, error) {
@@ -454,16 +584,61 @@ func printJSON(b []byte) ([]byte, error) {
 	return out.Bytes(), err
 }
 
+//
+// Get Functions
+//
+
+// GetLocations returns all available nodes.
+func GetLocations() (Locations, error) {
+	var locations Locations
+
+	lbytes, err := queryPanelAPI("locations")
+	if err != nil {
+		return locations, err
+	}
+
+	// Get node info from the panel
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(lbytes, &locations)
+	if err != nil {
+		return locations, err
+	}
+
+	return locations, nil
+}
+
+// GetNodes returns all available nodes.
+func GetNodes() (Nodes, error) {
+	var nodes Nodes
+
+	nbytes, err := queryPanelAPI("nodes")
+	if err != nil {
+		return nodes, err
+	}
+
+	// Get node info from the panel
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(nbytes, &nodes)
+	if err != nil {
+		return nodes, err
+	}
+
+	return nodes, nil
+}
+
 // GetServers returns all available servers.
 func GetServers() (Servers, error) {
 	var servers Servers
 
-	// set server infor from the panel
-	serverBytes := queryPanel(config.PanelURL+"/api/application/servers", config.AppToken)
+	// get json bytes from the panel.
+	sbytes, err := queryPanelAPI("servers")
+	if err != nil {
+		return servers, err
+	}
 
+	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err := json.Unmarshal(serverBytes, &servers)
-
+	err = json.Unmarshal(sbytes, &servers)
 	if err != nil {
 		return servers, err
 	}
@@ -471,19 +646,54 @@ func GetServers() (Servers, error) {
 	return servers, nil
 }
 
-// GetNodes returns all available nodes.
-func GetNodes() (Nodes, error) {
-	var nodes Nodes
+// GetNests returns all available nodes.
+func GetNests() (Nests, error) {
+	var nests Nests
 
-	// set server infor from the panel
-	nodeBytes := queryPanel(config.PanelURL+"/api/application/nodes", config.AppToken)
-
-	// Unmarshal the bytes to a usable struct.
-	err := json.Unmarshal(nodeBytes, &nodes)
-
+	// get json bytes from the panel.
+	nbytes, err := queryPanelAPI("nests")
 	if err != nil {
-		return nodes, err
+		return nests, err
 	}
 
-	return nodes, nil
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(nbytes, &nests)
+	if err != nil {
+		return nests, err
+	}
+
+	return nests, nil
+}
+
+// GetEggs returns all available nodes.
+func GetEggs() (Eggs, error) {
+	var eggs Eggs
+
+	return eggs, nil
+}
+
+// GetUsers returns all available nodes.
+func GetUsers() (Users, error) {
+	var users Users
+
+	// get json bytes from the panel.
+	ubytes, err := queryPanelAPI("users")
+	if err != nil {
+		return users, err
+	}
+
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(ubytes, &users)
+	if err != nil {
+		return users, err
+	}
+
+	return users, nil
+}
+
+//
+// Set Functions
+//
+func SetUser() {
+
 }
