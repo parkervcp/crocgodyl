@@ -49,7 +49,44 @@ func main() {
 
 	servers := data.Server
 
+	fmt.Println("All servers on the panel")
 	for _, server := range servers {
 		fmt.Printf("ID: %d Name: %s\n", server.Attributes.ID, server.Attributes.Name)
 	}
+
+	newServerEnvironment := make(map[string]string)
+
+	newServerEnvironment["SERVER_JARFILE"] = "server.jar"
+	newServerEnvironment["VANILLA_VERSION"] = "latest"
+
+	newServer := croc.ServerChange{
+		Name:        "A Minecraft Server",
+		User:        1,
+		Egg:         5,
+		DockerImage: `quay.io\/pterodactyl\/core:java`,
+		Startup:     "java -Xms128M -Xmx {{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}}",
+		Environment: newServerEnvironment,
+		Limits: croc.ServerLimits{
+			Memory: 1024,
+			Swap:   0,
+			Disk:   1024,
+			Io:     500,
+			CPU:    0,
+		},
+		FeatureLimits: croc.ServerFeatureLimits{
+			Databases:   0,
+			Allocations: 0,
+		},
+		Allocation: croc.ServerAllocation{
+			Default: 2,
+		},
+	}
+
+	newServerInfo, err := croc.CreateServer(newServer)
+	if err != nil {
+		log.Println(err)
+		os.Exit(37)
+	}
+
+	fmt.Println(newServerInfo)
 }
