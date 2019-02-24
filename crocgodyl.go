@@ -26,6 +26,27 @@ type Error struct {
 	} `json:"source,omitempty"`
 }
 
+// Meta is the meta information on some queries
+type Meta struct {
+	Pagination Pagination `json:"pagination,omitempty"`
+}
+
+// Pagination is the information how many responses there on a page and how many pages there are.
+type Pagination struct {
+	Total       int   `json:"total,omitempty"`
+	Count       int   `json:"count,omitempty"`
+	PerPage     int   `json:"per_page,omitempty"`
+	CurrentPage int   `json:"current_page,omitempty"`
+	TotalPages  int   `json:"total_pages,omitempty"`
+	Links       Links `json:"links"`
+}
+
+// Links is the struct for the links in the Pagination struct
+type Links struct {
+	Previous string `json:"previous,omitempty"`
+	Next     string `json:"next,omitempty"`
+}
+
 //
 // crocgodyl
 //
@@ -88,6 +109,7 @@ func queryPanelAPI(endpoint string, request string, data []byte) ([]byte, error)
 
 	//Sets request header for the http request
 	req.Header.Add("Authorization", "Bearer "+config.AppToken)
+	req.Header.Add("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
 	//send request
@@ -96,24 +118,9 @@ func queryPanelAPI(endpoint string, request string, data []byte) ([]byte, error)
 		return nil, err
 	}
 
-	if resp.StatusCode == 403 {
+	if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 202 && resp.StatusCode != 204 {
 		bodyBytes, _ = ioutil.ReadAll(resp.Body)
-		return bodyBytes, errors.New("the request was valid, but the server is refusing action")
-	}
-
-	if resp.StatusCode == 404 {
-		bodyBytes, _ = ioutil.ReadAll(resp.Body)
-		return bodyBytes, errors.New("the requested resource could not be found but may be available in the future")
-	}
-
-	if resp.StatusCode == 422 {
-		bodyBytes, _ = ioutil.ReadAll(resp.Body)
-		return bodyBytes, errors.New("the request was well-formed but was unable to be followed due to semantic errors")
-	}
-
-	if resp.StatusCode >= 500 {
-		bodyBytes, _ = ioutil.ReadAll(resp.Body)
-		return bodyBytes, errors.New("the server failed to fulfil a request")
+		return bodyBytes, errors.New(string(bodyBytes))
 	}
 
 	if resp.Body != nil {

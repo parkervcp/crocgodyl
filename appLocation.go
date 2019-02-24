@@ -2,6 +2,7 @@ package crocgodyl
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 )
 
@@ -10,65 +11,79 @@ import (
 // Locations is the struct for all the nodes added to the panel.
 // GET this from the '/api/application/locations` endpoint
 type Locations struct {
-	Object   string     `json:"object"`
-	Location []Location `json:"data"`
-	Meta     struct {
-		Pagination struct {
-			Total       int           `json:"total"`
-			Count       int           `json:"count"`
-			PerPage     int           `json:"per_page"`
-			CurrentPage int           `json:"current_page"`
-			TotalPages  int           `json:"total_pages"`
-			Links       []interface{} `json:"links"`
-		} `json:"pagination"`
-	} `json:"meta"`
+	Object    string     `json:"object,omitempty"`
+	Locations []Location `json:"data,omitempty"`
+	Meta      Meta       `json:"meta,omitempty"`
 }
 
 // Location is the struct for a single location.
 // GET this from the '/api/application/locations/<location_ID>` endpoint
 type Location struct {
-	Object     string `json:"object"`
-	Attributes struct {
-		ID        int       `json:"id"`
-		Short     string    `json:"short"`
-		Long      string    `json:"long"`
-		UpdatedAt time.Time `json:"updated_at"`
-		CreatedAt time.Time `json:"created_at"`
-	} `json:"attributes"`
+	Object     string             `json:"object,omitempty"`
+	Attributes LocationAttributes `json:"attributes,omitempty"`
 }
 
-// LocationEdit is the struct for the json when editing/creating a location.
+// LocationAttributes is the struct for a locations attributes.
 // GET this from the '/api/application/locations/<location_ID>` endpoint
-type LocationEdit struct {
-	Short string `json:"short"`
-	Long  string `json:"long"`
-}
-
-// LocatioCreateResponse is the struct for the response when creating a location.
-// GET this from the '/api/application/locations/<location_ID>` endpoint
-type LocatioCreateResponse struct {
-	Object     string `json:"object"`
-	Attributes struct {
-		ID         int       `json:"id"`
-		ExternalID string    `json:"external_id"`
-		UUID       string    `json:"uuid"`
-		Username   string    `json:"username"`
-		Email      string    `json:"email"`
-		FirstName  string    `json:"first_name"`
-		LastName   string    `json:"last_name"`
-		Language   string    `json:"language"`
-		RootAdmin  bool      `json:"root_admin"`
-		TwoFa      bool      `json:"2fa"`
-		CreatedAt  time.Time `json:"created_at"`
-		UpdatedAt  time.Time `json:"updated_at"`
-	} `json:"attributes"`
+// You can only edit the short and long(description) names on a location.
+type LocationAttributes struct {
+	ID        int       `json:"id,omitempty"`
+	Short     string    `json:"short,omitempty"`
+	Long      string    `json:"long,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
 // GetLocations returns all available nodes.
+// Depending on how man locations you have this may take a while.
 func GetLocations() (Locations, error) {
 	var locations Locations
+	var locationsAll Locations
 
-	lbytes, err := queryPanelAPI("locations", "get", nil)
+	pages, err := GetLocationByPage(1)
+	if err != nil {
+		return locations, err
+	}
+
+	for i := 1; i >= pages.Meta.Pagination.TotalPages; i++ {
+		locations, err := GetLocationByPage(i)
+		if err != nil {
+			return locations, err
+		}
+		for _, location := range locations.Locations {
+			locationsAll.Locations = append(locationsAll.Locations, location)
+		}
+	}
+
+	return locationsAll, nil
+}
+
+// GetLocation returns a single location by locationID.
+func GetLocation(locationID int) (Location, error) {
+	var location Location
+	endpoint := fmt.Sprintf("locations/%d", locationID)
+
+	lbytes, err := queryPanelAPI(endpoint, "get", nil)
+	if err != nil {
+		return location, err
+	}
+
+	// Get node info from the panel
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(lbytes, &location)
+	if err != nil {
+		return location, err
+	}
+
+	return location, nil
+}
+
+// GetLocationByPage returns all available locations by page.
+func GetLocationByPage(pageID int) (Locations, error) {
+	var locations Locations
+	endpoint := fmt.Sprintf("locations?page=%d", pageID)
+
+	lbytes, err := queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return locations, err
 	}
@@ -81,4 +96,69 @@ func GetLocations() (Locations, error) {
 	}
 
 	return locations, nil
+}
+
+// CreateLocation creates a user.
+func CreateLocation(newLocation LocationAttributes) (Location, error) {
+	var locationDetails Location
+
+	nlbytes, err := json.Marshal(newLocation)
+	if err != nil {
+		return locationDetails, err
+	}
+
+	// get json bytes from the panel.
+	lbytes, err := queryPanelAPI("locations/", "post", nlbytes)
+	if err != nil {
+		return locationDetails, err
+	}
+
+	// Get server info from the panel
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(lbytes, &locationDetails)
+	if err != nil {
+		return locationDetails, err
+	}
+
+	return locationDetails, nil
+}
+
+// EditLocation creates a user.
+func EditLocation(editLocation LocationAttributes, locationID int) (Location, error) {
+	var locationDetails Location
+	endpoint := fmt.Sprintf("locations/%d", locationID)
+
+	elbytes, err := json.Marshal(editLocation)
+	if err != nil {
+		return locationDetails, err
+	}
+
+	// get json bytes from the panel.
+	lbytes, err := queryPanelAPI(endpoint, "patch", elbytes)
+	if err != nil {
+		return locationDetails, err
+	}
+
+	// Get server info from the panel
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(lbytes, &locationDetails)
+	if err != nil {
+		return locationDetails, err
+	}
+
+	return locationDetails, nil
+}
+
+// DeleteLocation deletes a location.
+// It only requires a locationID as an int
+func DeleteLocation(locationID int) error {
+	endpoint := fmt.Sprintf("locations/%d", locationID)
+
+	// get json bytes from the panel.
+	_, err := queryPanelAPI(endpoint, "delete", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
