@@ -186,7 +186,7 @@ func main() {
 	fmt.Println("Listing all nodes on the panel.")
 	nodesData, err := croc.GetNodes()
 	if err != nil {
-		log.Println("There was an error getting the locations.")
+		log.Println("There was an error getting the allocations.")
 	}
 
 	fmt.Println("All nodes on the panel")
@@ -203,14 +203,28 @@ func main() {
 
 	fmt.Printf("ID: %d Name: %s\n", nodeData.Attributes.ID, nodeData.Attributes.Name)
 
-	fmt.Println("Getting allocation id by looking up the port.")
+	// Single Node All Ports and allocations
+	fmt.Println("Allocations on Node 1")
+	nodeAllocData, err := croc.GetNodeAllocations(2)
+	if err != nil {
+		log.Println(err)
+	}
+
+	for _, alloc := range nodeAllocData.Allocations {
+		fmt.Printf("ID: %d Port: %d\n", alloc.Attributes.ID, alloc.Attributes.Port)
+	}
+
+	// get allocation_id from the port
+	fmt.Println("Getting allocation id on node2 by looking up port 25566.")
 	allocationID, allocationAssigned, err := croc.GetNodeAllocationByPort(2, 25566)
 	if err != nil {
 		log.Println(err)
 	} else {
 		fmt.Printf("Allocation id: %d\nAssigned: %t\n", allocationID, allocationAssigned)
 	}
-	fmt.Println("Getting port by looking up the allocation id.")
+
+	// get port from the allocation number
+	fmt.Println("Getting port on node 2 by looking up allocation id 2.")
 	allocationPort, allocationAssigned, err := croc.GetNodeAllocationByID(2, 2)
 	if err != nil {
 		log.Println(err)

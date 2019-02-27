@@ -68,26 +68,6 @@ type AllocationAttributes struct {
 	Assigned bool     `json:"assigned,omitempty"`
 }
 
-// GetNodes returns all available nodes.
-func GetNodes() (Nodes, error) {
-	var nodes Nodes
-	endpoint := fmt.Sprintf("nodes/")
-
-	nbytes, err := queryPanelAPI(endpoint, "get", nil)
-	if err != nil {
-		return nodes, err
-	}
-
-	// Get node info from the panel
-	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(nbytes, &nodes)
-	if err != nil {
-		return nodes, err
-	}
-
-	return nodes, nil
-}
-
 // GetNode inforation on a single node.
 // nodeID is an int
 func GetNode(nodeID int) (Node, error) {
@@ -109,29 +89,47 @@ func GetNode(nodeID int) (Node, error) {
 	return node, nil
 }
 
-// GetNodeAllocations information on a single node.
-// Depending on how man allocations you have this may take a while.
-func GetNodeAllocations(nodeID int) (NodeAllocations, error) {
-	var allocations NodeAllocations
-	var allocationsAll NodeAllocations
+// GetNodesByPage inforation on a single node.
+// nodeID is an int
+func GetNodesByPage(pageID int) (Nodes, error) {
+	var node Nodes
+	endpoint := fmt.Sprintf("nodes?page=%d", pageID)
 
-	pages, err := GetNodeAllocationsByPage(nodeID, 1)
+	nbytes, err := queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
-		return allocations, err
+		return node, err
 	}
 
-	for i := 1; i <= pages.Meta.Pagination.TotalPages; i++ {
-		allocations, err := GetNodeAllocationsByPage(nodeID, i)
+	// Get node info from the panel
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(nbytes, &node)
+	if err != nil {
+		return node, err
+	}
+	return node, nil
+}
+
+// GetNodes returns all available nodes.
+func GetNodes() (Nodes, error) {
+	var nodesAll Nodes
+	i := 0
+
+	for {
+		i++
+		nodes, err := GetNodesByPage(i)
 		if err != nil {
-			return allocationsAll, err
+			return nodesAll, err
 		}
 
-		for _, allocation := range allocations.Allocations {
-			allocationsAll.Allocations = append(allocationsAll.Allocations, allocation)
+		for _, node := range nodes.Node {
+			nodesAll.Node = append(nodesAll.Node, node)
+		}
+
+		if i == nodes.Meta.Pagination.TotalPages {
+			break
 		}
 	}
-
-	return allocationsAll, nil
+	return nodesAll, nil
 }
 
 // GetNodeAllocationsByPage information on a single node by page count.
@@ -151,8 +149,31 @@ func GetNodeAllocationsByPage(nodeID int, pageID int) (NodeAllocations, error) {
 	if err != nil {
 		return allocations, err
 	}
-
 	return allocations, nil
+}
+
+// GetNodeAllocations information on a single node.
+// Depending on how man allocations you have this may take a while.
+func GetNodeAllocations(nodeID int) (NodeAllocations, error) {
+	var allocationsAll NodeAllocations
+	i := 0
+
+	for {
+		i++
+		allocations, err := GetNodeAllocationsByPage(nodeID, i)
+		if err != nil {
+			return allocationsAll, err
+		}
+
+		for _, allocation := range allocations.Allocations {
+			allocationsAll.Allocations = append(allocationsAll.Allocations, allocation)
+		}
+
+		if i == allocations.Meta.Pagination.TotalPages {
+			break
+		}
+	}
+	return allocationsAll, nil
 }
 
 // GetNodeAllocationByPort returns the allocation id and assigned status
@@ -167,7 +188,6 @@ func GetNodeAllocationByPort(nodeID int, portNum int) (int, bool, error) {
 			return allocation.Attributes.ID, allocation.Attributes.Assigned, nil
 		}
 	}
-
 	return 0, false, errors.New("port not found")
 }
 
@@ -183,7 +203,6 @@ func GetNodeAllocationByID(nodeID int, allocationID int) (int, bool, error) {
 			return allocation.Attributes.Port, allocation.Attributes.Assigned, nil
 		}
 	}
-
 	return 0, false, errors.New("id not found")
 }
 
@@ -209,7 +228,6 @@ func CreateNode(newNode NodeAttributes) (Node, error) {
 	if err != nil {
 		return nodeDetails, err
 	}
-
 	return nodeDetails, nil
 }
 
@@ -228,11 +246,10 @@ func CreateNodeAllocations(newNodeAllocations AllocationAttributes, nodeID int) 
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
-// EditNode creates a user.
+// EditNode edits a nodes information.
 func EditNode(editNode NodeAttributes, nodeID int) (Node, error) {
 	var nodeDetails Node
 	endpoint := fmt.Sprintf("nodes/%d", nodeID)
@@ -254,6 +271,31 @@ func EditNode(editNode NodeAttributes, nodeID int) (Node, error) {
 	if err != nil {
 		return nodeDetails, err
 	}
-
 	return nodeDetails, nil
+}
+
+// DeleteNode send a delete request to the panel for a node
+// Returns any errors from the panel in json format
+func DeleteNode(nodeID int) error {
+	endpoint := fmt.Sprintf("nodes/%d", nodeID)
+
+	// get json bytes from the panel.
+	_, err := queryPanelAPI(endpoint, "delete", nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// DeleteNodeAllocation send a delete request to the panel for a node allocation.
+// Returns any errors from the panel in json format.
+func DeleteNodeAllocation(nodeID int, allocID int) error {
+	endpoint := fmt.Sprintf("nodes/%d/allocations/%d", nodeID, allocID)
+
+	// get json bytes from the panel.
+	_, err := queryPanelAPI(endpoint, "delete", nil)
+	if err != nil {
+		return err
+	}
+	return nil
 }
