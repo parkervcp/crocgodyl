@@ -39,6 +39,7 @@ type ServerAttributes struct {
 	Egg           int                 `json:"egg,omitempty"`
 	Pack          interface{}         `json:"pack,omitempty"`
 	Container     ServerContainer     `json:"container,omitempty"`
+	Relationships ServerRelationship  `json:"relationships,omitempty"`
 	UpdatedAt     time.Time           `json:"updated_at,omitempty"`
 	CreatedAt     time.Time           `json:"created_at,omitempty"`
 }
@@ -67,8 +68,8 @@ type ServerLimits struct {
 
 // ServerFeatureLimits this is the limit on Databases and extra Allocations on a server
 type ServerFeatureLimits struct {
-	Databases   int `json:"databases"`
-	Allocations int `json:"allocations"`
+	Databases   int `json:"databases,omitempty"`
+	Allocations int `json:"allocations,omitempty"`
 }
 
 // ServerContainer is the config on the docker container the server runs in.
@@ -77,6 +78,29 @@ type ServerContainer struct {
 	Image          string            `json:"image,omitempty"`
 	Installed      bool              `json:"installed,omitempty"`
 	Environment    map[string]string `json:"environment,omitempty"`
+}
+
+// ServerRelationship are the relationships for a server.
+type ServerRelationship struct {
+	Allocations struct {
+		Object string          `json:"object,omitempty"`
+		Data   []ServerRelData `json:"data,omitempty"`
+	} `json:"allocations,omitempty"`
+}
+
+// ServerRelData is the data for the server relationship
+type ServerRelData struct {
+	Object     string                  `json:"object,omitempty"`
+	Attributes ServerRelDataAttributes `json:"attributes,omitempty"`
+}
+
+// ServerRelDataAttributes are the attributes for the server relationship data
+type ServerRelDataAttributes struct {
+	ID       int         `json:"id,omitempty"`
+	IP       string      `json:"ip,omitempty"`
+	Alias    interface{} `json:"alias,omitempty"`
+	Port     int         `json:"port,omitempty"`
+	Assigned bool        `json:"assigned,omitempty"`
 }
 
 // ServerAllocation is only used when creating a server
@@ -122,6 +146,26 @@ func GetServer(serverid int) (Server, error) {
 	}
 
 	return server, nil
+}
+
+// GetServerAllocations will return a list of allocations for the server in a []int array
+func GetServerAllocations(serverid int) ([]int, error) {
+	var allServerAlloc []int
+
+	// get json bytes from the panel.
+	sabytes, err := queryPanelAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
+	if err != nil {
+		return allServerAlloc, err
+	}
+
+	// Get server info from the panel
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(sabytes, &allServerAlloc)
+	if err != nil {
+		return allServerAlloc, err
+	}
+
+	return allServerAlloc, nil
 }
 
 // CreateServer creates a new server via the API.
