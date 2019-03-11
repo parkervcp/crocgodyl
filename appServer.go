@@ -35,6 +35,7 @@ type ServerAttributes struct {
 	User          int                 `json:"user,omitempty"`
 	Node          int                 `json:"node,omitempty"`
 	Allocation    int                 `json:"allocation,omitempty"`
+	Relationships ServerRealtions     `json:"relationships,omitempty"`
 	Nest          int                 `json:"nest,omitempty"`
 	Egg           int                 `json:"egg,omitempty"`
 	Pack          interface{}         `json:"pack,omitempty"`
@@ -108,6 +109,26 @@ type ServerAllocation struct {
 	Default int `json:"default,omitempty"`
 }
 
+// ServerRealtions is the struct for Relationships for a Server
+type ServerRealtions struct {
+	Allocations struct {
+		Object string                    `json:"object,omitempty"`
+		Data   []ServerAllocRetalionData `json:"data,omitempty"`
+	} `json:"allocations,omitempty"`
+}
+
+// ServerAllocRetalionData is the struct for Allocation Relationships on a Server
+type ServerAllocRetalionData struct {
+	Object     string `json:"object,omitempty"`
+	Attributes struct {
+		ID       int    `json:"id,omitempty"`
+		IP       string `json:"ip,omitempty"`
+		Alias    string `json:"alias,omitempty"`
+		Port     int    `json:"port,omitempty"`
+		Assigned bool   `json:"assigned,omitempty"`
+	}
+}
+
 // GetServers returns all available servers.
 func GetServers() (Servers, error) {
 	var servers Servers
@@ -133,7 +154,7 @@ func GetServer(serverid int) (Server, error) {
 	var server Server
 
 	// get json bytes from the panel.
-	sbytes, err := queryPanelAPI("servers/"+strconv.Itoa(serverid), "get", nil)
+	sbytes, err := queryPanelAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
 	if err != nil {
 		return server, err
 	}
@@ -219,8 +240,6 @@ func EditServerDetails(newServer ServerChange, serverid int) (Server, error) {
 
 	return serverDetails, nil
 }
-
-//TODO: bug dane about this too
 
 // EditServerBuild creates a new server via the API.
 // The server name and user are required when updating a server.

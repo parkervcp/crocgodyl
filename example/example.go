@@ -182,27 +182,53 @@ func main() {
 	   /_//_/\___/\_,_/\__/___/
 	*/
 
+<<<<<<< Updated upstream
 	// All Nodes
 	fmt.Println("Listing all nodes on the panel.")
 	nodesData, err := croc.GetNodes()
 	if err != nil {
 		log.Println("There was an error getting the allocations.")
 	}
+=======
+	/*
+		// All Nodes
+		fmt.Println("Listing all nodes on the panel.")
+		nodesData, err := croc.GetNodes()
+		if err != nil {
+			log.Println("There was an error getting the locations.")
+		}
+>>>>>>> Stashed changes
 
-	fmt.Println("All nodes on the panel")
-	for _, node := range nodesData.Node {
-		fmt.Printf("ID: %d Name: %s\n", node.Attributes.ID, node.Attributes.Name)
-	}
+		fmt.Println("All nodes on the panel")
+		for _, node := range nodesData.Node {
+			fmt.Printf("ID: %d Name: %s\n", node.Attributes.ID, node.Attributes.Name)
+		}
 
-	// Single Node
-	fmt.Println("Information on Node 1")
-	nodeData, err := croc.GetNode(1)
-	if err != nil {
-		log.Println("There was an error getting the locations.")
-	}
+		// Single Node
+		fmt.Println("Information on Node 1")
+		nodeData, err := croc.GetNode(1)
+		if err != nil {
+			log.Println("There was an error getting the locations.")
+		}
 
-	fmt.Printf("ID: %d Name: %s\n", nodeData.Attributes.ID, nodeData.Attributes.Name)
+		fmt.Printf("ID: %d Name: %s\n", nodeData.Attributes.ID, nodeData.Attributes.Name)
 
+		fmt.Println("Getting allocation id by looking up the port.")
+		allocationID, allocationAssigned, err := croc.GetNodeAllocationByPort(2, 25566)
+		if err != nil {
+			log.Println(err)
+		} else {
+			fmt.Printf("Allocation id: %d\nAssigned: %t\n", allocationID, allocationAssigned)
+		}
+		fmt.Println("Getting port by looking up the allocation id.")
+		allocationPort, allocationAssigned, err := croc.GetNodeAllocationByID(2, 2)
+		if err != nil {
+			log.Println(err)
+		} else {
+			fmt.Printf("Allocation id: %d\nAssigned: %t\n", allocationPort, allocationAssigned)
+		}
+
+<<<<<<< Updated upstream
 	// Single Node All Ports and allocations
 	fmt.Println("Allocations on Node 1")
 	nodeAllocData, err := croc.GetNodeAllocations(2)
@@ -231,8 +257,9 @@ func main() {
 	} else {
 		fmt.Printf("Allocation id: %d\nAssigned: %t\n", allocationPort, allocationAssigned)
 	}
+=======
+>>>>>>> Stashed changes
 
-	/*
 		newNode := croc.NodeAttributes{
 			Name:               "testing4",
 			LocationID:         3,
@@ -299,19 +326,35 @@ func main() {
 		/___/\__/_/  |___/\__/_/ /___/
 	*/
 
+	// get server information and print the id and names of the first page of servers on the panel.
+	fmt.Println("All servers on the panel")
+
+	serversData, err := croc.GetServers()
+	if err != nil {
+		log.Println("There was an error getting the servers.")
+	}
+
+	for _, server := range serversData.Server {
+		fmt.Printf("ID: %d Name: %s\n", server.Attributes.ID, server.Attributes.Name)
+	}
+
+	// Get information on a single server.
+	serverData, err := croc.GetServer(1)
+	if err != nil {
+		log.Println("There was an error getting the servers.")
+	}
+
+	fmt.Printf("ID: %d Name: %s\n", serverData.Attributes.ID, serverData.Attributes.Name)
+
+	var serverPorts []int
+
+	for _, relation := range serverData.Attributes.Relationships.Allocations.Data {
+		serverPorts = append(serverPorts, relation.Attributes.Port)
+	}
+
+	log.Printf("The server has the following ports assinged: %d\n", serverPorts)
+
 	/*
-		// get configs and print the server id and names of all the servers on the panel.
-		fmt.Println("All servers on the panel")
-
-		serverData, err := croc.GetServers()
-		if err != nil {
-			log.Println("There was an error getting the servers.")
-		}
-
-		for _, server := range serverData.Server {
-			fmt.Printf("ID: %d Name: %s\n", server.Attributes.ID, server.Attributes.Name)
-		}
-
 		// build out a new server config.
 		// this is for a vanilla minecraft server.
 
@@ -370,7 +413,6 @@ func main() {
 		} else {
 			fmt.Printf("ID: %d Name: %s\n", editedServerInfo.Attributes.ID, editedServerInfo.Attributes.Name)
 		}
-
 
 		fmt.Println("Editing server build.")
 
