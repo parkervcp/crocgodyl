@@ -40,7 +40,6 @@ type ServerAttributes struct {
 	Egg           int                 `json:"egg,omitempty"`
 	Pack          interface{}         `json:"pack,omitempty"`
 	Container     ServerContainer     `json:"container,omitempty"`
-	Relationships ServerRelationship  `json:"relationships,omitempty"`
 	UpdatedAt     time.Time           `json:"updated_at,omitempty"`
 	CreatedAt     time.Time           `json:"created_at,omitempty"`
 }
@@ -81,14 +80,6 @@ type ServerContainer struct {
 	Environment    map[string]string `json:"environment,omitempty"`
 }
 
-// ServerRelationship are the relationships for a server.
-type ServerRelationship struct {
-	Allocations struct {
-		Object string          `json:"object,omitempty"`
-		Data   []ServerRelData `json:"data,omitempty"`
-	} `json:"allocations,omitempty"`
-}
-
 // ServerRelData is the data for the server relationship
 type ServerRelData struct {
 	Object     string                  `json:"object,omitempty"`
@@ -106,7 +97,8 @@ type ServerRelDataAttributes struct {
 
 // ServerAllocation is only used when creating a server
 type ServerAllocation struct {
-	Default int `json:"default,omitempty"`
+	Default    int   `json:"default,omitempty"`
+	Additional []int `json:"additional,omitempty"`
 }
 
 // ServerRealtions is the struct for Relationships for a Server

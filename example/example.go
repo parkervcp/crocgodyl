@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -182,14 +181,6 @@ func main() {
 	   /_//_/\___/\_,_/\__/___/
 	*/
 
-<<<<<<< Updated upstream
-	// All Nodes
-	fmt.Println("Listing all nodes on the panel.")
-	nodesData, err := croc.GetNodes()
-	if err != nil {
-		log.Println("There was an error getting the allocations.")
-	}
-=======
 	/*
 		// All Nodes
 		fmt.Println("Listing all nodes on the panel.")
@@ -197,7 +188,6 @@ func main() {
 		if err != nil {
 			log.Println("There was an error getting the locations.")
 		}
->>>>>>> Stashed changes
 
 		fmt.Println("All nodes on the panel")
 		for _, node := range nodesData.Node {
@@ -228,37 +218,34 @@ func main() {
 			fmt.Printf("Allocation id: %d\nAssigned: %t\n", allocationPort, allocationAssigned)
 		}
 
-<<<<<<< Updated upstream
-	// Single Node All Ports and allocations
-	fmt.Println("Allocations on Node 1")
-	nodeAllocData, err := croc.GetNodeAllocations(2)
-	if err != nil {
-		log.Println(err)
-	}
+		// Single Node All Ports and allocations
+		fmt.Println("Allocations on Node 1")
+		nodeAllocData, err := croc.GetNodeAllocations(2)
+		if err != nil {
+			log.Println(err)
+		}
 
-	for _, alloc := range nodeAllocData.Allocations {
-		fmt.Printf("ID: %d Port: %d\n", alloc.Attributes.ID, alloc.Attributes.Port)
-	}
+		for _, alloc := range nodeAllocData.Allocations {
+			fmt.Printf("ID: %d Port: %d\n", alloc.Attributes.ID, alloc.Attributes.Port)
+		}
 
-	// get allocation_id from the port
-	fmt.Println("Getting allocation id on node2 by looking up port 25566.")
-	allocationID, allocationAssigned, err := croc.GetNodeAllocationByPort(2, 25566)
-	if err != nil {
-		log.Println(err)
-	} else {
-		fmt.Printf("Allocation id: %d\nAssigned: %t\n", allocationID, allocationAssigned)
-	}
+		// get allocation_id from the port
+		fmt.Println("Getting allocation id on node2 by looking up port 25566.")
+		allocationID, allocationAssigned, err := croc.GetNodeAllocationByPort(2, 25566)
+		if err != nil {
+			log.Println(err)
+		} else {
+			fmt.Printf("Allocation id: %d\nAssigned: %t\n", allocationID, allocationAssigned)
+		}
 
-	// get port from the allocation number
-	fmt.Println("Getting port on node 2 by looking up allocation id 2.")
-	allocationPort, allocationAssigned, err := croc.GetNodeAllocationByID(2, 2)
-	if err != nil {
-		log.Println(err)
-	} else {
-		fmt.Printf("Allocation id: %d\nAssigned: %t\n", allocationPort, allocationAssigned)
-	}
-=======
->>>>>>> Stashed changes
+		// get port from the allocation number
+		fmt.Println("Getting port on node 2 by looking up allocation id 2.")
+		allocationPort, allocationAssigned, err := croc.GetNodeAllocationByID(2, 2)
+		if err != nil {
+			log.Println(err)
+		} else {
+			fmt.Printf("Allocation id: %d\nAssigned: %t\n", allocationPort, allocationAssigned)
+		}
 
 		newNode := croc.NodeAttributes{
 			Name:               "testing4",
@@ -326,35 +313,36 @@ func main() {
 		/___/\__/_/  |___/\__/_/ /___/
 	*/
 
-	// get server information and print the id and names of the first page of servers on the panel.
-	fmt.Println("All servers on the panel")
-
-	serversData, err := croc.GetServers()
-	if err != nil {
-		log.Println("There was an error getting the servers.")
-	}
-
-	for _, server := range serversData.Server {
-		fmt.Printf("ID: %d Name: %s\n", server.Attributes.ID, server.Attributes.Name)
-	}
-
-	// Get information on a single server.
-	serverData, err := croc.GetServer(1)
-	if err != nil {
-		log.Println("There was an error getting the servers.")
-	}
-
-	fmt.Printf("ID: %d Name: %s\n", serverData.Attributes.ID, serverData.Attributes.Name)
-
-	var serverPorts []int
-
-	for _, relation := range serverData.Attributes.Relationships.Allocations.Data {
-		serverPorts = append(serverPorts, relation.Attributes.Port)
-	}
-
-	log.Printf("The server has the following ports assinged: %d\n", serverPorts)
-
 	/*
+		// get server information and print the id and names of the first page of servers on the panel.
+		fmt.Println("All servers on the panel")
+
+		serversData, err := croc.GetServers()
+		if err != nil {
+			log.Println("There was an error getting the servers.")
+		}
+
+		for _, server := range serversData.Server {
+			fmt.Printf("ID: %d Name: %s\n", server.Attributes.ID, server.Attributes.Name)
+		}
+
+		// Get information on a single server.
+		serverData, err := croc.GetServer(1)
+		if err != nil {
+			log.Println("There was an error getting the servers.")
+		}
+
+		fmt.Printf("ID: %d Name: %s\n", serverData.Attributes.ID, serverData.Attributes.Name)
+
+		var serverPorts []int
+
+		for _, relation := range serverData.Attributes.Relationships.Allocations.Data {
+			serverPorts = append(serverPorts, relation.Attributes.Port)
+		}
+
+		log.Printf("The server has the following ports assinged: %d\n", serverPorts)
+
+
 		// build out a new server config.
 		// this is for a vanilla minecraft server.
 
