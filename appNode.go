@@ -70,11 +70,11 @@ type AllocationAttributes struct {
 
 // GetNode inforation on a single node.
 // nodeID is an int
-func GetNode(nodeID int) (Node, error) {
+func (config CrocConfig) GetNode(nodeID int) (Node, error) {
 	var node Node
 	endpoint := fmt.Sprintf("nodes/%d", nodeID)
 
-	nbytes, err := queryPanelAPI(endpoint, "get", nil)
+	nbytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return node, err
 	}
@@ -91,11 +91,11 @@ func GetNode(nodeID int) (Node, error) {
 
 // GetNodesByPage inforation on a single node.
 // nodeID is an int
-func GetNodesByPage(pageID int) (Nodes, error) {
+func (config CrocConfig) GetNodesByPage(pageID int) (Nodes, error) {
 	var node Nodes
 	endpoint := fmt.Sprintf("nodes?page=%d", pageID)
 
-	nbytes, err := queryPanelAPI(endpoint, "get", nil)
+	nbytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return node, err
 	}
@@ -110,13 +110,13 @@ func GetNodesByPage(pageID int) (Nodes, error) {
 }
 
 // GetNodes returns all available nodes.
-func GetNodes() (Nodes, error) {
+func (config CrocConfig) GetNodes() (Nodes, error) {
 	var nodesAll Nodes
 	i := 0
 
 	for {
 		i++
-		nodes, err := GetNodesByPage(i)
+		nodes, err := config.GetNodesByPage(i)
 		if err != nil {
 			return nodesAll, err
 		}
@@ -134,11 +134,11 @@ func GetNodes() (Nodes, error) {
 
 // GetNodeAllocationsByPage information on a single node by page count.
 // nodeID is an int
-func GetNodeAllocationsByPage(nodeID int, pageID int) (NodeAllocations, error) {
+func (config CrocConfig) GetNodeAllocationsByPage(nodeID int, pageID int) (NodeAllocations, error) {
 	var allocations NodeAllocations
 	endpoint := fmt.Sprintf("nodes/%d/allocations?page=%d", nodeID, pageID)
 
-	nabytes, err := queryPanelAPI(endpoint, "get", nil)
+	nabytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return allocations, err
 	}
@@ -154,13 +154,13 @@ func GetNodeAllocationsByPage(nodeID int, pageID int) (NodeAllocations, error) {
 
 // GetNodeAllocations information on a single node.
 // Depending on how man allocations you have this may take a while.
-func GetNodeAllocations(nodeID int) (NodeAllocations, error) {
+func (config CrocConfig) GetNodeAllocations(nodeID int) (NodeAllocations, error) {
 	var allocationsAll NodeAllocations
 	i := 0
 
 	for {
 		i++
-		allocations, err := GetNodeAllocationsByPage(nodeID, i)
+		allocations, err := config.GetNodeAllocationsByPage(nodeID, i)
 		if err != nil {
 			return allocationsAll, err
 		}
@@ -177,8 +177,8 @@ func GetNodeAllocations(nodeID int) (NodeAllocations, error) {
 }
 
 // GetNodeAllocationByPort returns the allocation id and assigned status
-func GetNodeAllocationByPort(nodeID int, portNum int) (int, bool, error) {
-	allocations, err := GetNodeAllocations(nodeID)
+func (config CrocConfig) GetNodeAllocationByPort(nodeID int, portNum int) (int, bool, error) {
+	allocations, err := config.GetNodeAllocations(nodeID)
 	if err != nil {
 		return 0, false, err
 	}
@@ -192,8 +192,8 @@ func GetNodeAllocationByPort(nodeID int, portNum int) (int, bool, error) {
 }
 
 // GetNodeAllocationByID returns the allocation id and assigned status
-func GetNodeAllocationByID(nodeID int, allocationID int) (int, bool, error) {
-	allocations, err := GetNodeAllocations(nodeID)
+func (config CrocConfig) GetNodeAllocationByID(nodeID int, allocationID int) (int, bool, error) {
+	allocations, err := config.GetNodeAllocations(nodeID)
 	if err != nil {
 		return 0, false, err
 	}
@@ -207,7 +207,7 @@ func GetNodeAllocationByID(nodeID int, allocationID int) (int, bool, error) {
 }
 
 // CreateNode creates a user.
-func CreateNode(newNode NodeAttributes) (Node, error) {
+func (config CrocConfig) CreateNode(newNode NodeAttributes) (Node, error) {
 	var nodeDetails Node
 	endpoint := fmt.Sprintf("nodes/")
 
@@ -217,7 +217,7 @@ func CreateNode(newNode NodeAttributes) (Node, error) {
 	}
 
 	// get json bytes from the panel.
-	nbytes, err := queryPanelAPI(endpoint, "post", nnbytes)
+	nbytes, err := config.queryPanelAPI(endpoint, "post", nnbytes)
 	if err != nil {
 		return nodeDetails, err
 	}
@@ -233,7 +233,7 @@ func CreateNode(newNode NodeAttributes) (Node, error) {
 
 // CreateNodeAllocations creates a user.
 // the panel does not response with a repsonse but a 204
-func CreateNodeAllocations(newNodeAllocations AllocationAttributes, nodeID int) error {
+func (config CrocConfig) CreateNodeAllocations(newNodeAllocations AllocationAttributes, nodeID int) error {
 	endpoint := fmt.Sprintf("nodes/%d/allocations", nodeID)
 
 	nnabytes, err := json.Marshal(newNodeAllocations)
@@ -242,7 +242,7 @@ func CreateNodeAllocations(newNodeAllocations AllocationAttributes, nodeID int) 
 	}
 
 	// get json bytes from the panel.
-	_, err = queryPanelAPI(endpoint, "post", nnabytes)
+	_, err = config.queryPanelAPI(endpoint, "post", nnabytes)
 	if err != nil {
 		return err
 	}
@@ -250,7 +250,7 @@ func CreateNodeAllocations(newNodeAllocations AllocationAttributes, nodeID int) 
 }
 
 // EditNode edits a nodes information.
-func EditNode(editNode NodeAttributes, nodeID int) (Node, error) {
+func (config CrocConfig) EditNode(editNode NodeAttributes, nodeID int) (Node, error) {
 	var nodeDetails Node
 	endpoint := fmt.Sprintf("nodes/%d", nodeID)
 
@@ -260,7 +260,7 @@ func EditNode(editNode NodeAttributes, nodeID int) (Node, error) {
 	}
 
 	// get json bytes from the panel.
-	nbytes, err := queryPanelAPI(endpoint, "patch", enbytes)
+	nbytes, err := config.queryPanelAPI(endpoint, "patch", enbytes)
 	if err != nil {
 		return nodeDetails, err
 	}
@@ -276,11 +276,11 @@ func EditNode(editNode NodeAttributes, nodeID int) (Node, error) {
 
 // DeleteNode send a delete request to the panel for a node
 // Returns any errors from the panel in json format
-func DeleteNode(nodeID int) error {
+func (config CrocConfig) DeleteNode(nodeID int) error {
 	endpoint := fmt.Sprintf("nodes/%d", nodeID)
 
 	// get json bytes from the panel.
-	_, err := queryPanelAPI(endpoint, "delete", nil)
+	_, err := config.queryPanelAPI(endpoint, "delete", nil)
 	if err != nil {
 		return err
 	}
@@ -289,11 +289,11 @@ func DeleteNode(nodeID int) error {
 
 // DeleteNodeAllocation send a delete request to the panel for a node allocation.
 // Returns any errors from the panel in json format.
-func DeleteNodeAllocation(nodeID int, allocID int) error {
+func (config CrocConfig) DeleteNodeAllocation(nodeID int, allocID int) error {
 	endpoint := fmt.Sprintf("nodes/%d/allocations/%d", nodeID, allocID)
 
 	// get json bytes from the panel.
-	_, err := queryPanelAPI(endpoint, "delete", nil)
+	_, err := config.queryPanelAPI(endpoint, "delete", nil)
 	if err != nil {
 		return err
 	}

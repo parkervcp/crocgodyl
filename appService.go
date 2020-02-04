@@ -93,11 +93,11 @@ type Egg struct {
 }
 
 // GetNests returns all available nodes.
-func GetNests() (Nests, error) {
+func (config CrocConfig) GetNests() (Nests, error) {
 	var nests Nests
 
 	// get json bytes from the panel.
-	nbytes, err := queryPanelAPI("nests", "get", nil)
+	nbytes, err := config.queryPanelAPI("nests", "get", nil)
 	if err != nil {
 		return nests, err
 	}
@@ -112,7 +112,7 @@ func GetNests() (Nests, error) {
 }
 
 // GetEggs returns all available nodes.
-func GetEggs() (Eggs, error) {
+func (config CrocConfig) GetEggs() (Eggs, error) {
 	var eggs Eggs
 
 	return eggs, nil

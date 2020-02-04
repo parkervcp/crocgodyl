@@ -122,11 +122,11 @@ type ServerAllocRetalionData struct {
 }
 
 // GetServers returns all available servers.
-func GetServers() (Servers, error) {
+func (config CrocConfig) GetServers() (Servers, error) {
 	var servers Servers
 
 	// get json bytes from the panel.
-	sbytes, err := queryPanelAPI("servers", "get", nil)
+	sbytes, err := config.queryPanelAPI("servers", "get", nil)
 	if err != nil {
 		return servers, err
 	}
@@ -142,11 +142,11 @@ func GetServers() (Servers, error) {
 }
 
 // GetServer returns Information on a single server.
-func GetServer(serverid int) (Server, error) {
+func (config CrocConfig) GetServer(serverid int) (Server, error) {
 	var server Server
 
 	// get json bytes from the panel.
-	sbytes, err := queryPanelAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
+	sbytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
 	if err != nil {
 		return server, err
 	}
@@ -162,11 +162,11 @@ func GetServer(serverid int) (Server, error) {
 }
 
 // GetServerAllocations will return a list of allocations for the server in a []int array
-func GetServerAllocations(serverid int) ([]int, error) {
+func (config CrocConfig) GetServerAllocations(serverid int) ([]int, error) {
 	var allServerAlloc []int
 
 	// get json bytes from the panel.
-	sabytes, err := queryPanelAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
+	sabytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
 	if err != nil {
 		return allServerAlloc, err
 	}
@@ -183,7 +183,7 @@ func GetServerAllocations(serverid int) ([]int, error) {
 
 // CreateServer creates a new server via the API.
 // A complete ServerChange is required.
-func CreateServer(newServer ServerChange) (Server, error) {
+func (config CrocConfig) CreateServer(newServer ServerChange) (Server, error) {
 	var serverDetails Server
 
 	nsbytes, err := json.Marshal(newServer)
@@ -192,7 +192,7 @@ func CreateServer(newServer ServerChange) (Server, error) {
 	}
 
 	// get json bytes from the panel.
-	sbytes, err := queryPanelAPI("servers", "post", nsbytes)
+	sbytes, err := config.queryPanelAPI("servers", "post", nsbytes)
 	if err != nil {
 		return serverDetails, err
 	}
@@ -209,7 +209,7 @@ func CreateServer(newServer ServerChange) (Server, error) {
 
 // EditServerDetails creates a new server via the API.
 // The server name and user are required when updating a server.
-func EditServerDetails(newServer ServerChange, serverid int) (Server, error) {
+func (config CrocConfig) EditServerDetails(newServer ServerChange, serverid int) (Server, error) {
 	var serverDetails Server
 
 	esbytes, err := json.Marshal(newServer)
@@ -218,7 +218,7 @@ func EditServerDetails(newServer ServerChange, serverid int) (Server, error) {
 	}
 
 	// get json bytes from the panel.
-	sbytes, err := queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/details", "patch", esbytes)
+	sbytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/details", "patch", esbytes)
 	if err != nil {
 		return serverDetails, err
 	}
@@ -235,7 +235,7 @@ func EditServerDetails(newServer ServerChange, serverid int) (Server, error) {
 
 // EditServerBuild creates a new server via the API.
 // The server name and user are required when updating a server.
-func EditServerBuild(newServer ServerChange, serverid int) (Server, error) {
+func (config CrocConfig) EditServerBuild(newServer ServerChange, serverid int) (Server, error) {
 	var serverDetails Server
 
 	esbytes, err := json.Marshal(newServer)
@@ -244,7 +244,7 @@ func EditServerBuild(newServer ServerChange, serverid int) (Server, error) {
 	}
 
 	// get json bytes from the panel.
-	sbytes, err := queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/build", "patch", esbytes)
+	sbytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/build", "patch", esbytes)
 	if err != nil {
 		return serverDetails, err
 	}
@@ -261,7 +261,7 @@ func EditServerBuild(newServer ServerChange, serverid int) (Server, error) {
 
 // EditServerStartup creates a new server via the API.
 // The server name and user are required when updating a server.
-func EditServerStartup(newServer ServerChange, serverid int) (Server, error) {
+func (config CrocConfig) EditServerStartup(newServer ServerChange, serverid int) (Server, error) {
 	var serverDetails Server
 
 	esbytes, err := json.Marshal(newServer)
@@ -270,7 +270,7 @@ func EditServerStartup(newServer ServerChange, serverid int) (Server, error) {
 	}
 
 	// get json bytes from the panel.
-	sbytes, err := queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/startup", "patch", esbytes)
+	sbytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/startup", "patch", esbytes)
 	if err != nil {
 		return serverDetails, err
 	}
@@ -287,9 +287,9 @@ func EditServerStartup(newServer ServerChange, serverid int) (Server, error) {
 
 // DeleteServer deletes a server.
 // It only requires a server id as a string
-func DeleteServer(serverid int) error {
+func (config CrocConfig) DeleteServer(serverid int) error {
 	// get json bytes from the panel.
-	_, err := queryPanelAPI("servers/"+strconv.Itoa(serverid), "delete", nil)
+	_, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid), "delete", nil)
 	if err != nil {
 		return err
 	}

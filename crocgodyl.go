@@ -50,9 +50,9 @@ type Links struct {
 //
 // crocgodyl
 //
-var config crocConfig
 
-type crocConfig struct {
+// CrocConfig is the config for crocgodyl
+type CrocConfig struct {
 	PanelURL    string
 	ClientToken string
 	AppToken    string
@@ -63,33 +63,33 @@ type crocConfig struct {
 //
 
 // New sets up the API interface with
-func New(panelURL string, clientToken string, appToken string) error {
+func New(panelURL string, clientToken string, appToken string) (config CrocConfig, err error) {
 
 	if panelURL == "" && clientToken == "" && appToken == "" {
-		return errors.New("You need to configure the panel and at least one api token")
+		return config, errors.New("you need to configure the panel and at least one api token")
 	}
 
 	if panelURL == "" {
-		return errors.New("A panel URL is required to use the API")
+		return config, errors.New("a panel URL is required to use the API")
 	}
 
 	if clientToken == "" && appToken == "" {
-		return errors.New("At least one api token is required")
+		return config, errors.New("at least one api token is required")
 	}
 
 	config.PanelURL = panelURL
 	config.ClientToken = clientToken
 	config.AppToken = appToken
 
-	_, err := GetUsers()
-	if err != nil {
-		return err
+	// validate the server is up and available
+	if _, err = config.GetUsers(); err != nil {
+		return config, err
 	}
 
-	return nil
+	return
 }
 
-func queryPanelAPI(endpoint string, request string, data []byte) ([]byte, error) {
+func (config CrocConfig) queryPanelAPI(endpoint, request string, data []byte) ([]byte, error) {
 	//var for response body byte
 	var bodyBytes []byte
 	//http get json request

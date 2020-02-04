@@ -36,17 +36,17 @@ type LocationAttributes struct {
 
 // GetLocations returns all available nodes.
 // Depending on how man locations you have this may take a while.
-func GetLocations() (Locations, error) {
+func (config CrocConfig) GetLocations() (Locations, error) {
 	var locations Locations
 	var locationsAll Locations
 
-	pages, err := GetLocationByPage(1)
+	pages, err := config.GetLocationByPage(1)
 	if err != nil {
 		return locations, err
 	}
 
 	for i := 1; i >= pages.Meta.Pagination.TotalPages; i++ {
-		locations, err := GetLocationByPage(i)
+		locations, err := config.GetLocationByPage(i)
 		if err != nil {
 			return locations, err
 		}
@@ -59,11 +59,11 @@ func GetLocations() (Locations, error) {
 }
 
 // GetLocation returns a single location by locationID.
-func GetLocation(locationID int) (Location, error) {
+func (config CrocConfig) GetLocation(locationID int) (Location, error) {
 	var location Location
 	endpoint := fmt.Sprintf("locations/%d", locationID)
 
-	lbytes, err := queryPanelAPI(endpoint, "get", nil)
+	lbytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return location, err
 	}
@@ -79,11 +79,11 @@ func GetLocation(locationID int) (Location, error) {
 }
 
 // GetLocationByPage returns all available locations by page.
-func GetLocationByPage(pageID int) (Locations, error) {
+func (config CrocConfig) GetLocationByPage(pageID int) (Locations, error) {
 	var locations Locations
 	endpoint := fmt.Sprintf("locations?page=%d", pageID)
 
-	lbytes, err := queryPanelAPI(endpoint, "get", nil)
+	lbytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return locations, err
 	}
@@ -99,7 +99,7 @@ func GetLocationByPage(pageID int) (Locations, error) {
 }
 
 // CreateLocation creates a user.
-func CreateLocation(newLocation LocationAttributes) (Location, error) {
+func (config CrocConfig) CreateLocation(newLocation LocationAttributes) (Location, error) {
 	var locationDetails Location
 
 	nlbytes, err := json.Marshal(newLocation)
@@ -108,7 +108,7 @@ func CreateLocation(newLocation LocationAttributes) (Location, error) {
 	}
 
 	// get json bytes from the panel.
-	lbytes, err := queryPanelAPI("locations/", "post", nlbytes)
+	lbytes, err := config.queryPanelAPI("locations/", "post", nlbytes)
 	if err != nil {
 		return locationDetails, err
 	}
@@ -124,7 +124,7 @@ func CreateLocation(newLocation LocationAttributes) (Location, error) {
 }
 
 // EditLocation creates a user.
-func EditLocation(editLocation LocationAttributes, locationID int) (Location, error) {
+func (config CrocConfig) EditLocation(editLocation LocationAttributes, locationID int) (Location, error) {
 	var locationDetails Location
 	endpoint := fmt.Sprintf("locations/%d", locationID)
 
@@ -134,7 +134,7 @@ func EditLocation(editLocation LocationAttributes, locationID int) (Location, er
 	}
 
 	// get json bytes from the panel.
-	lbytes, err := queryPanelAPI(endpoint, "patch", elbytes)
+	lbytes, err := config.queryPanelAPI(endpoint, "patch", elbytes)
 	if err != nil {
 		return locationDetails, err
 	}
@@ -151,11 +151,11 @@ func EditLocation(editLocation LocationAttributes, locationID int) (Location, er
 
 // DeleteLocation deletes a location.
 // It only requires a locationID as an int
-func DeleteLocation(locationID int) error {
+func (config CrocConfig) DeleteLocation(locationID int) error {
 	endpoint := fmt.Sprintf("locations/%d", locationID)
 
 	// get json bytes from the panel.
-	_, err := queryPanelAPI(endpoint, "delete", nil)
+	_, err := config.queryPanelAPI(endpoint, "delete", nil)
 	if err != nil {
 		return err
 	}
