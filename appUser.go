@@ -43,11 +43,11 @@ type UserAttributes struct {
 }
 
 // GetUsers returns Information on all users.
-func GetUsers() (Users, error) {
+func (config CrocConfig) GetUsers() (Users, error) {
 	var users Users
 
 	// get json bytes from the panel.
-	ubytes, err := queryPanelAPI("users", "get", nil)
+	ubytes, err := config.queryPanelAPI("users", "get", nil)
 	if err != nil {
 		return users, err
 	}
@@ -62,12 +62,12 @@ func GetUsers() (Users, error) {
 }
 
 // GetUser returns Information on a single user.
-func GetUser(userID int) (User, error) {
+func (config CrocConfig) GetUser(userID int) (User, error) {
 	var user User
 	endpoint := fmt.Sprintf("users/%d", userID)
 
 	// get json bytes from the panel.
-	ubytes, err := queryPanelAPI(endpoint, "get", nil)
+	ubytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return user, err
 	}
@@ -83,12 +83,12 @@ func GetUser(userID int) (User, error) {
 
 // GetUserByExternal returns Information on a single user by their externalID.
 // The externalID is a string as that is what the panel requires.
-func GetUserByExternal(externalID string) (User, error) {
+func (config CrocConfig) GetUserByExternal(externalID string) (User, error) {
 	var user User
 	endpoint := fmt.Sprintf("users/%s", externalID)
 
 	// get json bytes from the panel.
-	ubytes, err := queryPanelAPI(endpoint, "get", nil)
+	ubytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return user, err
 	}
@@ -104,12 +104,12 @@ func GetUserByExternal(externalID string) (User, error) {
 
 // GetUserByPage returns Information on users by their page number.
 // The externalID is a string as that is what the panel requires.
-func GetUserByPage(pageID int) (User, error) {
+func (config CrocConfig) GetUserByPage(pageID int) (User, error) {
 	var user User
 	endpoint := fmt.Sprintf("users/%d", pageID)
 
 	// get json bytes from the panel.
-	ubytes, err := queryPanelAPI(endpoint, "get", nil)
+	ubytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return user, err
 	}
@@ -124,7 +124,7 @@ func GetUserByPage(pageID int) (User, error) {
 }
 
 // CreateUser creates a user.
-func CreateUser(newUser UserAttributes) (User, error) {
+func (config CrocConfig) CreateUser(newUser UserAttributes) (User, error) {
 	var userDetails User
 
 	nubytes, err := json.Marshal(newUser)
@@ -133,7 +133,7 @@ func CreateUser(newUser UserAttributes) (User, error) {
 	}
 
 	// get json bytes from the panel.
-	ubytes, err := queryPanelAPI("users", "post", nubytes)
+	ubytes, err := config.queryPanelAPI("users", "post", nubytes)
 	if err != nil {
 		return userDetails, err
 	}
@@ -151,7 +151,7 @@ func CreateUser(newUser UserAttributes) (User, error) {
 // EditUser creates a user.
 // Send a UserAttributes to the panel to update the user.
 // You cannot edit the id or created/updated fields for the user.
-func EditUser(editUser UserAttributes, userID int) (User, error) {
+func (config CrocConfig) EditUser(editUser UserAttributes, userID int) (User, error) {
 	var userDetails User
 	endpoint := fmt.Sprintf("users/%d", userID)
 
@@ -161,7 +161,7 @@ func EditUser(editUser UserAttributes, userID int) (User, error) {
 	}
 
 	// get json bytes from the panel.
-	ubytes, err := queryPanelAPI(endpoint, "patch", eubytes)
+	ubytes, err := config.queryPanelAPI(endpoint, "patch", eubytes)
 	if err != nil {
 		return userDetails, err
 	}
@@ -178,11 +178,11 @@ func EditUser(editUser UserAttributes, userID int) (User, error) {
 
 // DeleteUser deletes a user.
 // It only requires a user id as a string
-func DeleteUser(userID int) error {
+func (config CrocConfig) DeleteUser(userID int) error {
 	endpoint := fmt.Sprintf("users/%d", userID)
 
 	// get json bytes from the panel.
-	_, err := queryPanelAPI(endpoint, "delete", nil)
+	_, err := config.queryPanelAPI(endpoint, "delete", nil)
 	if err != nil {
 		return err
 	}

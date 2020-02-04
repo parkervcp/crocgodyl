@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -39,7 +40,17 @@ func init() {
 }
 
 func main() {
-	croc.New(Config.PanelURL, Config.ClientToken, Config.APIToken)
+	panel, err := croc.New(Config.PanelURL, Config.ClientToken, Config.APIToken)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		return
+	}
+
+	// validate the server is up and available
+	if _, err = panel.GetUsers(); err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	/*
 	    __ _____ ___ _______
@@ -48,18 +59,19 @@ func main() {
 	*/
 
 	/*
-		// get configs and print the user id and usernames of all the users on the panel.
-		fmt.Println("All users on the panel")
-
-			userData, err := croc.GetUsers()
+		userData, err := panel.GetUsers()
 		if err != nil {
-			log.Println("There was an error getting the users.")
+			log.Printf("%v", err)
+			return
 		}
 
 		fmt.Println("All users on the panel")
 		for _, user := range userData.User {
 			fmt.Printf("ID: %d Name: %s\n", user.Attributes.ID, user.Attributes.Username)
 		}
+
+		// get configs and print the user id and usernames of all the users on the panel.
+		fmt.Println("All users on the panel")
 
 		fmt.Println("Creating user")
 		newUser := croc.UserAttributes{
@@ -69,7 +81,7 @@ func main() {
 			LastName:  "User",
 		}
 
-		newUserInfo, err := croc.CreateUser(newUser)
+		newUserInfo, err := panel.CreateUser(newUser)
 		if err != nil {
 			log.Println("Failed to create user.")
 			log.Println(err)
@@ -89,7 +101,7 @@ func main() {
 			ExternalID: "99",
 		}
 
-		editUserInfo, err := croc.EditUser(editUser, 3)
+		editUserInfo, err := panel.EditUser(editUser, 3)
 		if err != nil {
 			log.Println("User edit failed.")
 			log.Println(err)
@@ -99,13 +111,12 @@ func main() {
 			fmt.Printf("ID: %d Name: %s\n", editUserInfo.Attributes.ID, editUserInfo.Attributes.Username)
 		}
 
-		err := croc.DeleteUser(3)
+		err = panel.DeleteUser(3)
 		if err != nil {
 			log.Println(err)
 		} else {
 			log.Println("User deleted succesfully.")
 		}
-
 	*/
 
 	/*
@@ -117,18 +128,18 @@ func main() {
 
 	/*
 		fmt.Println("Listing all locations on the panel.")
-		locationsData, err := croc.GetLocations()
+		locationsData, err := panel.GetLocations()
 		if err != nil {
 			log.Println("There was an error getting the locations.")
 		}
 
 		fmt.Println("All users on the panel")
-		for _, location := range locationsData.Location {
+		for _, location := range locationsData.Locations {
 			fmt.Printf("ID: %d Name: %s\n", location.Attributes.ID, location.Attributes.Long)
 		}
 
 		fmt.Println("Listing info on location 1 from the panel")
-		locationData, err := croc.GetLocation(1)
+		locationData, err := panel.GetLocation(1)
 		if err != nil {
 			log.Println("There was an error getting the locations.")
 		}
@@ -141,7 +152,7 @@ func main() {
 			Long:  "us datacenter",
 		}
 
-		newLocationInfo, err := croc.CreateLocation(newLocation)
+		newLocationInfo, err := panel.CreateLocation(newLocation)
 		if err != nil {
 			log.Println("Failed to create location.")
 			log.Println(err)
@@ -156,7 +167,7 @@ func main() {
 			Long:  "us los angelos datacenter",
 		}
 
-		editLocationInfo, err := croc.EditLocation(editLocation, 5)
+		editLocationInfo, err := panel.EditLocation(editLocation, 5)
 		if err != nil {
 			log.Println("Failed to edit location.")
 			log.Println(err)
@@ -166,7 +177,7 @@ func main() {
 			fmt.Printf("ID: %d ShortName: %s\n", editLocationInfo.Attributes.ID, editLocationInfo.Attributes.Short)
 		}
 
-		err = croc.DeleteLocation(5)
+		err = panel.DeleteLocation(5)
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -184,7 +195,7 @@ func main() {
 	/*
 		// All Nodes
 		fmt.Println("Listing all nodes on the panel.")
-		nodesData, err := croc.GetNodes()
+		nodesData, err := panel.GetNodes()
 		if err != nil {
 			log.Println("There was an error getting the locations.")
 		}
@@ -196,7 +207,7 @@ func main() {
 
 		// Single Node
 		fmt.Println("Information on Node 1")
-		nodeData, err := croc.GetNode(1)
+		nodeData, err := panel.GetNode(1)
 		if err != nil {
 			log.Println("There was an error getting the locations.")
 		}
@@ -204,14 +215,14 @@ func main() {
 		fmt.Printf("ID: %d Name: %s\n", nodeData.Attributes.ID, nodeData.Attributes.Name)
 
 		fmt.Println("Getting allocation id by looking up the port.")
-		allocationID, allocationAssigned, err := croc.GetNodeAllocationByPort(2, 25566)
+		allocationID, allocationAssigned, err := panel.GetNodeAllocationByPort(2, 25566)
 		if err != nil {
 			log.Println(err)
 		} else {
 			fmt.Printf("Allocation id: %d\nAssigned: %t\n", allocationID, allocationAssigned)
 		}
 		fmt.Println("Getting port by looking up the allocation id.")
-		allocationPort, allocationAssigned, err := croc.GetNodeAllocationByID(2, 2)
+		allocationPort, allocationAssigned, err := panel.GetNodeAllocationByID(2, 2)
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -220,7 +231,7 @@ func main() {
 
 		// Single Node All Ports and allocations
 		fmt.Println("Allocations on Node 1")
-		nodeAllocData, err := croc.GetNodeAllocations(2)
+		nodeAllocData, err := panel.GetNodeAllocations(2)
 		if err != nil {
 			log.Println(err)
 		}
@@ -231,7 +242,7 @@ func main() {
 
 		// get allocation_id from the port
 		fmt.Println("Getting allocation id on node2 by looking up port 25566.")
-		allocationID, allocationAssigned, err := croc.GetNodeAllocationByPort(2, 25566)
+		allocationID, allocationAssigned, err = panel.GetNodeAllocationByPort(2, 25566)
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -240,7 +251,7 @@ func main() {
 
 		// get port from the allocation number
 		fmt.Println("Getting port on node 2 by looking up allocation id 2.")
-		allocationPort, allocationAssigned, err := croc.GetNodeAllocationByID(2, 2)
+		allocationPort, allocationAssigned, err = panel.GetNodeAllocationByID(2, 2)
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -260,7 +271,7 @@ func main() {
 			DaemonListen:       8080,
 			DaemonSftp:         2022,
 		}
-		newNodeInfo, err := croc.CreateNode(newNode)
+		newNodeInfo, err := panel.CreateNode(newNode)
 		if err != nil {
 			log.Println("Failed to create node.")
 			log.Println(err)
@@ -275,7 +286,7 @@ func main() {
 			Ports: []string{"4000", "4001", "4002-4500"},
 		}
 
-		err = croc.CreateNodeAllocations(newNodeAllocations, 7)
+		err = panel.CreateNodeAllocations(newNodeAllocations, 7)
 		if err != nil {
 			log.Println("Failed to add node allocations.")
 			log.Println(err)
@@ -297,7 +308,7 @@ func main() {
 			DaemonSftp:         2022,
 		}
 
-		editNodeInfo, err := croc.EditNode(editNode, 2)
+		editNodeInfo, err := panel.EditNode(editNode, 2)
 		if err != nil {
 			log.Println("Failed to edit node.")
 			log.Println(err)
@@ -307,6 +318,7 @@ func main() {
 			fmt.Printf("ID: %d Name: %s\n", editNodeInfo.Attributes.ID, editNodeInfo.Attributes.Name)
 		}
 	*/
+
 	/*
 		  ___ ___ _____  _____ _______
 		 (_-</ -_) __/ |/ / -_) __(_-<
@@ -317,7 +329,7 @@ func main() {
 		// get server information and print the id and names of the first page of servers on the panel.
 		fmt.Println("All servers on the panel")
 
-		serversData, err := croc.GetServers()
+		serversData, err := panel.GetServers()
 		if err != nil {
 			log.Println("There was an error getting the servers.")
 		}
@@ -327,7 +339,7 @@ func main() {
 		}
 
 		// Get information on a single server.
-		serverData, err := croc.GetServer(1)
+		serverData, err := panel.GetServer(1)
 		if err != nil {
 			log.Println("There was an error getting the servers.")
 		}
@@ -341,7 +353,6 @@ func main() {
 		}
 
 		log.Printf("The server has the following ports assinged: %d\n", serverPorts)
-
 
 		// build out a new server config.
 		// this is for a vanilla minecraft server.
@@ -379,7 +390,7 @@ func main() {
 
 		// Creates a new server and returns the server info that the panel responds with.
 		// If there was an error crocgodyle will give you the error code and error message from the panel in json.
-		newServerInfo, err := croc.CreateServer(newServer)
+		newServerInfo, err := panel.CreateServer(newServer)
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -395,7 +406,7 @@ func main() {
 			User: 1,
 		}
 
-		editedServerInfo, err := croc.EditServerDetails(editServer, 19)
+		editedServerInfo, err := panel.EditServerDetails(editServer, 19)
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -409,7 +420,7 @@ func main() {
 			User: 1,
 		}
 
-		editedServerInfo, err = croc.EditServerDetails(editServer, 19)
+		editedServerInfo, err = panel.EditServerDetails(editServer, 19)
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -417,7 +428,7 @@ func main() {
 		}
 
 		// Delete a server
-		err = croc.DeleteServer(19)
+		err = panel.DeleteServer(19)
 		if err != nil {
 			log.Println(err)
 		} else {
