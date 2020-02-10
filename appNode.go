@@ -70,7 +70,7 @@ type AllocationAttributes struct {
 
 // GetNode inforation on a single node.
 // nodeID is an int
-func (config CrocConfig) GetNode(nodeID int) (Node, error) {
+func (config *CrocConfig) GetNode(nodeID int) (Node, error) {
 	var node Node
 	endpoint := fmt.Sprintf("nodes/%d", nodeID)
 
@@ -91,7 +91,7 @@ func (config CrocConfig) GetNode(nodeID int) (Node, error) {
 
 // GetNodesByPage inforation on a single node.
 // nodeID is an int
-func (config CrocConfig) GetNodesByPage(pageID int) (Nodes, error) {
+func (config *CrocConfig) GetNodesByPage(pageID int) (Nodes, error) {
 	var node Nodes
 	endpoint := fmt.Sprintf("nodes?page=%d", pageID)
 
@@ -110,7 +110,7 @@ func (config CrocConfig) GetNodesByPage(pageID int) (Nodes, error) {
 }
 
 // GetNodes returns all available nodes.
-func (config CrocConfig) GetNodes() (Nodes, error) {
+func (config *CrocConfig) GetNodes() (Nodes, error) {
 	var nodesAll Nodes
 	i := 0
 
@@ -134,7 +134,7 @@ func (config CrocConfig) GetNodes() (Nodes, error) {
 
 // GetNodeAllocationsByPage information on a single node by page count.
 // nodeID is an int
-func (config CrocConfig) GetNodeAllocationsByPage(nodeID int, pageID int) (NodeAllocations, error) {
+func (config *CrocConfig) GetNodeAllocationsByPage(nodeID int, pageID int) (NodeAllocations, error) {
 	var allocations NodeAllocations
 	endpoint := fmt.Sprintf("nodes/%d/allocations?page=%d", nodeID, pageID)
 
@@ -154,7 +154,7 @@ func (config CrocConfig) GetNodeAllocationsByPage(nodeID int, pageID int) (NodeA
 
 // GetNodeAllocations information on a single node.
 // Depending on how man allocations you have this may take a while.
-func (config CrocConfig) GetNodeAllocations(nodeID int) (NodeAllocations, error) {
+func (config *CrocConfig) GetNodeAllocations(nodeID int) (NodeAllocations, error) {
 	var allocationsAll NodeAllocations
 	i := 0
 
@@ -177,7 +177,7 @@ func (config CrocConfig) GetNodeAllocations(nodeID int) (NodeAllocations, error)
 }
 
 // GetNodeAllocationByPort returns the allocation id and assigned status
-func (config CrocConfig) GetNodeAllocationByPort(nodeID int, portNum int) (int, bool, error) {
+func (config *CrocConfig) GetNodeAllocationByPort(nodeID int, portNum int) (int, bool, error) {
 	allocations, err := config.GetNodeAllocations(nodeID)
 	if err != nil {
 		return 0, false, err
@@ -192,7 +192,7 @@ func (config CrocConfig) GetNodeAllocationByPort(nodeID int, portNum int) (int, 
 }
 
 // GetNodeAllocationByID returns the allocation id and assigned status
-func (config CrocConfig) GetNodeAllocationByID(nodeID int, allocationID int) (int, bool, error) {
+func (config *CrocConfig) GetNodeAllocationByID(nodeID int, allocationID int) (int, bool, error) {
 	allocations, err := config.GetNodeAllocations(nodeID)
 	if err != nil {
 		return 0, false, err
@@ -207,7 +207,7 @@ func (config CrocConfig) GetNodeAllocationByID(nodeID int, allocationID int) (in
 }
 
 // CreateNode creates a user.
-func (config CrocConfig) CreateNode(newNode NodeAttributes) (Node, error) {
+func (config *CrocConfig) CreateNode(newNode NodeAttributes) (Node, error) {
 	var nodeDetails Node
 	endpoint := fmt.Sprintf("nodes/")
 
@@ -233,7 +233,7 @@ func (config CrocConfig) CreateNode(newNode NodeAttributes) (Node, error) {
 
 // CreateNodeAllocations creates a user.
 // the panel does not response with a repsonse but a 204
-func (config CrocConfig) CreateNodeAllocations(newNodeAllocations AllocationAttributes, nodeID int) error {
+func (config *CrocConfig) CreateNodeAllocations(newNodeAllocations AllocationAttributes, nodeID int) error {
 	endpoint := fmt.Sprintf("nodes/%d/allocations", nodeID)
 
 	nnabytes, err := json.Marshal(newNodeAllocations)
@@ -250,7 +250,7 @@ func (config CrocConfig) CreateNodeAllocations(newNodeAllocations AllocationAttr
 }
 
 // EditNode edits a nodes information.
-func (config CrocConfig) EditNode(editNode NodeAttributes, nodeID int) (Node, error) {
+func (config *CrocConfig) EditNode(editNode NodeAttributes, nodeID int) (Node, error) {
 	var nodeDetails Node
 	endpoint := fmt.Sprintf("nodes/%d", nodeID)
 
@@ -276,7 +276,7 @@ func (config CrocConfig) EditNode(editNode NodeAttributes, nodeID int) (Node, er
 
 // DeleteNode send a delete request to the panel for a node
 // Returns any errors from the panel in json format
-func (config CrocConfig) DeleteNode(nodeID int) error {
+func (config *CrocConfig) DeleteNode(nodeID int) error {
 	endpoint := fmt.Sprintf("nodes/%d", nodeID)
 
 	// get json bytes from the panel.
@@ -289,7 +289,7 @@ func (config CrocConfig) DeleteNode(nodeID int) error {
 
 // DeleteNodeAllocation send a delete request to the panel for a node allocation.
 // Returns any errors from the panel in json format.
-func (config CrocConfig) DeleteNodeAllocation(nodeID int, allocID int) error {
+func (config *CrocConfig) DeleteNodeAllocation(nodeID int, allocID int) error {
 	endpoint := fmt.Sprintf("nodes/%d/allocations/%d", nodeID, allocID)
 
 	// get json bytes from the panel.

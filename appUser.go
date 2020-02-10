@@ -43,7 +43,7 @@ type UserAttributes struct {
 }
 
 // GetUsers returns Information on all users.
-func (config CrocConfig) GetUsers() (Users, error) {
+func (config *CrocConfig) GetUsers() (Users, error) {
 	var users Users
 
 	// get json bytes from the panel.
@@ -62,7 +62,7 @@ func (config CrocConfig) GetUsers() (Users, error) {
 }
 
 // GetUser returns Information on a single user.
-func (config CrocConfig) GetUser(userID int) (User, error) {
+func (config *CrocConfig) GetUser(userID int) (User, error) {
 	var user User
 	endpoint := fmt.Sprintf("users/%d", userID)
 
@@ -83,7 +83,7 @@ func (config CrocConfig) GetUser(userID int) (User, error) {
 
 // GetUserByExternal returns Information on a single user by their externalID.
 // The externalID is a string as that is what the panel requires.
-func (config CrocConfig) GetUserByExternal(externalID string) (User, error) {
+func (config *CrocConfig) GetUserByExternal(externalID string) (User, error) {
 	var user User
 	endpoint := fmt.Sprintf("users/%s", externalID)
 
@@ -104,7 +104,7 @@ func (config CrocConfig) GetUserByExternal(externalID string) (User, error) {
 
 // GetUserByPage returns Information on users by their page number.
 // The externalID is a string as that is what the panel requires.
-func (config CrocConfig) GetUserByPage(pageID int) (User, error) {
+func (config *CrocConfig) GetUserByPage(pageID int) (User, error) {
 	var user User
 	endpoint := fmt.Sprintf("users/%d", pageID)
 
@@ -124,7 +124,7 @@ func (config CrocConfig) GetUserByPage(pageID int) (User, error) {
 }
 
 // CreateUser creates a user.
-func (config CrocConfig) CreateUser(newUser UserAttributes) (User, error) {
+func (config *CrocConfig) CreateUser(newUser UserAttributes) (User, error) {
 	var userDetails User
 
 	nubytes, err := json.Marshal(newUser)
@@ -151,7 +151,7 @@ func (config CrocConfig) CreateUser(newUser UserAttributes) (User, error) {
 // EditUser creates a user.
 // Send a UserAttributes to the panel to update the user.
 // You cannot edit the id or created/updated fields for the user.
-func (config CrocConfig) EditUser(editUser UserAttributes, userID int) (User, error) {
+func (config *CrocConfig) EditUser(editUser UserAttributes, userID int) (User, error) {
 	var userDetails User
 	endpoint := fmt.Sprintf("users/%d", userID)
 
@@ -178,7 +178,7 @@ func (config CrocConfig) EditUser(editUser UserAttributes, userID int) (User, er
 
 // DeleteUser deletes a user.
 // It only requires a user id as a string
-func (config CrocConfig) DeleteUser(userID int) error {
+func (config *CrocConfig) DeleteUser(userID int) error {
 	endpoint := fmt.Sprintf("users/%d", userID)
 
 	// get json bytes from the panel.

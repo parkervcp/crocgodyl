@@ -122,7 +122,7 @@ type ServerAllocRetalionData struct {
 }
 
 // GetServers returns all available servers.
-func (config CrocConfig) GetServers() (Servers, error) {
+func (config *CrocConfig) GetServers() (Servers, error) {
 	var servers Servers
 
 	// get json bytes from the panel.
@@ -142,7 +142,7 @@ func (config CrocConfig) GetServers() (Servers, error) {
 }
 
 // GetServer returns Information on a single server.
-func (config CrocConfig) GetServer(serverid int) (Server, error) {
+func (config *CrocConfig) GetServer(serverid int) (Server, error) {
 	var server Server
 
 	// get json bytes from the panel.
@@ -162,7 +162,7 @@ func (config CrocConfig) GetServer(serverid int) (Server, error) {
 }
 
 // GetServerAllocations will return a list of allocations for the server in a []int array
-func (config CrocConfig) GetServerAllocations(serverid int) ([]int, error) {
+func (config *CrocConfig) GetServerAllocations(serverid int) ([]int, error) {
 	var allServerAlloc []int
 
 	// get json bytes from the panel.
@@ -183,7 +183,7 @@ func (config CrocConfig) GetServerAllocations(serverid int) ([]int, error) {
 
 // CreateServer creates a new server via the API.
 // A complete ServerChange is required.
-func (config CrocConfig) CreateServer(newServer ServerChange) (Server, error) {
+func (config *CrocConfig) CreateServer(newServer ServerChange) (Server, error) {
 	var serverDetails Server
 
 	nsbytes, err := json.Marshal(newServer)
@@ -209,7 +209,7 @@ func (config CrocConfig) CreateServer(newServer ServerChange) (Server, error) {
 
 // EditServerDetails creates a new server via the API.
 // The server name and user are required when updating a server.
-func (config CrocConfig) EditServerDetails(newServer ServerChange, serverid int) (Server, error) {
+func (config *CrocConfig) EditServerDetails(newServer ServerChange, serverid int) (Server, error) {
 	var serverDetails Server
 
 	esbytes, err := json.Marshal(newServer)
@@ -235,7 +235,7 @@ func (config CrocConfig) EditServerDetails(newServer ServerChange, serverid int)
 
 // EditServerBuild creates a new server via the API.
 // The server name and user are required when updating a server.
-func (config CrocConfig) EditServerBuild(newServer ServerChange, serverid int) (Server, error) {
+func (config *CrocConfig) EditServerBuild(newServer ServerChange, serverid int) (Server, error) {
 	var serverDetails Server
 
 	esbytes, err := json.Marshal(newServer)
@@ -261,7 +261,7 @@ func (config CrocConfig) EditServerBuild(newServer ServerChange, serverid int) (
 
 // EditServerStartup creates a new server via the API.
 // The server name and user are required when updating a server.
-func (config CrocConfig) EditServerStartup(newServer ServerChange, serverid int) (Server, error) {
+func (config *CrocConfig) EditServerStartup(newServer ServerChange, serverid int) (Server, error) {
 	var serverDetails Server
 
 	esbytes, err := json.Marshal(newServer)
@@ -287,7 +287,7 @@ func (config CrocConfig) EditServerStartup(newServer ServerChange, serverid int)
 
 // DeleteServer deletes a server.
 // It only requires a server id as a string
-func (config CrocConfig) DeleteServer(serverid int) error {
+func (config *CrocConfig) DeleteServer(serverid int) error {
 	// get json bytes from the panel.
 	_, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid), "delete", nil)
 	if err != nil {

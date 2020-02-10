@@ -36,7 +36,7 @@ type LocationAttributes struct {
 
 // GetLocations returns all available nodes.
 // Depending on how man locations you have this may take a while.
-func (config CrocConfig) GetLocations() (Locations, error) {
+func (config *CrocConfig) GetLocations() (Locations, error) {
 	var locations Locations
 	var locationsAll Locations
 
@@ -59,7 +59,7 @@ func (config CrocConfig) GetLocations() (Locations, error) {
 }
 
 // GetLocation returns a single location by locationID.
-func (config CrocConfig) GetLocation(locationID int) (Location, error) {
+func (config *CrocConfig) GetLocation(locationID int) (Location, error) {
 	var location Location
 	endpoint := fmt.Sprintf("locations/%d", locationID)
 
@@ -79,7 +79,7 @@ func (config CrocConfig) GetLocation(locationID int) (Location, error) {
 }
 
 // GetLocationByPage returns all available locations by page.
-func (config CrocConfig) GetLocationByPage(pageID int) (Locations, error) {
+func (config *CrocConfig) GetLocationByPage(pageID int) (Locations, error) {
 	var locations Locations
 	endpoint := fmt.Sprintf("locations?page=%d", pageID)
 
@@ -99,7 +99,7 @@ func (config CrocConfig) GetLocationByPage(pageID int) (Locations, error) {
 }
 
 // CreateLocation creates a user.
-func (config CrocConfig) CreateLocation(newLocation LocationAttributes) (Location, error) {
+func (config *CrocConfig) CreateLocation(newLocation LocationAttributes) (Location, error) {
 	var locationDetails Location
 
 	nlbytes, err := json.Marshal(newLocation)
@@ -124,7 +124,7 @@ func (config CrocConfig) CreateLocation(newLocation LocationAttributes) (Locatio
 }
 
 // EditLocation creates a user.
-func (config CrocConfig) EditLocation(editLocation LocationAttributes, locationID int) (Location, error) {
+func (config *CrocConfig) EditLocation(editLocation LocationAttributes, locationID int) (Location, error) {
 	var locationDetails Location
 	endpoint := fmt.Sprintf("locations/%d", locationID)
 
@@ -151,7 +151,7 @@ func (config CrocConfig) EditLocation(editLocation LocationAttributes, locationI
 
 // DeleteLocation deletes a location.
 // It only requires a locationID as an int
-func (config CrocConfig) DeleteLocation(locationID int) error {
+func (config *CrocConfig) DeleteLocation(locationID int) error {
 	endpoint := fmt.Sprintf("locations/%d", locationID)
 
 	// get json bytes from the panel.

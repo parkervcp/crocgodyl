@@ -62,8 +62,8 @@ type CrocConfig struct {
 // Application code
 //
 
-// New sets up the API interface with
-func New(panelURL string, clientToken string, appToken string) (config CrocConfig, err error) {
+// NewCrocConfig sets up the API interface with
+func NewCrocConfig(panelURL string, clientToken string, appToken string) (config *CrocConfig, err error) {
 
 	if panelURL == "" && clientToken == "" && appToken == "" {
 		return config, errors.New("you need to configure the panel and at least one api token")
@@ -89,7 +89,7 @@ func New(panelURL string, clientToken string, appToken string) (config CrocConfi
 	return
 }
 
-func (config CrocConfig) queryPanelAPI(endpoint, request string, data []byte) ([]byte, error) {
+func (config *CrocConfig) queryPanelAPI(endpoint, request string, data []byte) ([]byte, error) {
 	//var for response body byte
 	var bodyBytes []byte
 	//http get json request

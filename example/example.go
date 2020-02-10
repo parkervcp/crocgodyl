@@ -40,7 +40,7 @@ func init() {
 }
 
 func main() {
-	panel, err := croc.New(Config.PanelURL, Config.ClientToken, Config.APIToken)
+	panel, err := croc.NewCrocConfig(Config.PanelURL, Config.ClientToken, Config.APIToken)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		return
