@@ -9,7 +9,7 @@ import (
 )
 
 // VERSION of crocgodyl follows Semantic Versioning. (http://semver.org/)
-const VERSION = "0.0.2-alpha"
+const VERSION = "0.0.3-alpha"
 
 // ErrorResponse is the response from the panels for errors.
 type ErrorResponse struct {
@@ -116,7 +116,7 @@ func (config *CrocConfig) queryPanelAPI(endpoint, request string, data []byte) (
 		return nil, err
 	}
 
-	if resp.StatusCode < 200 || resp.StatusCode < 204 {
+	if resp.StatusCode > 200 && resp.StatusCode < 204 {
 		bodyBytes, _ = ioutil.ReadAll(resp.Body)
 		return bodyBytes, errors.New(string(bodyBytes))
 	}
