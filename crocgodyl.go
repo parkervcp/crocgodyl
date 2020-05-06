@@ -33,11 +33,11 @@ type Meta struct {
 
 // Pagination is the information how many responses there on a page and how many pages there are.
 type Pagination struct {
-	Total       int     `json:"total,omitempty"`
-	Count       int     `json:"count,omitempty"`
-	PerPage     int     `json:"per_page,omitempty"`
-	CurrentPage int     `json:"current_page,omitempty"`
-	TotalPages  int     `json:"total_pages,omitempty"`
+	Total       int   `json:"total,omitempty"`
+	Count       int   `json:"count,omitempty"`
+	PerPage     int   `json:"per_page,omitempty"`
+	CurrentPage int   `json:"current_page,omitempty"`
+	TotalPages  int   `json:"total_pages,omitempty"`
 	Links       Links `json:"links"`
 }
 
@@ -84,28 +84,25 @@ func NewCrocConfig(panelURL string, clientToken string, appToken string) (config
 
 	// validate the server is up and available
 	if _, err = config.GetUsers(); err != nil {
-		return config, err
+		return config, nil
 	}
 
 	return
 }
 
 func (config *CrocConfig) queryPanelAPI(endpoint, request string, data []byte) ([]byte, error) {
-	//var for response body byte
 	var bodyBytes []byte
-	//http get json request
+
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", config.PanelURL+"/api/application/"+endpoint, nil)
 
 	switch {
-	case request == "get":
 	case request == "post":
 		req, _ = http.NewRequest("POST", config.PanelURL+"/api/application/"+endpoint, bytes.NewBuffer(data))
 	case request == "patch":
 		req, _ = http.NewRequest("PATCH", config.PanelURL+"/api/application/"+endpoint, bytes.NewBuffer(data))
 	case request == "delete":
 		req, _ = http.NewRequest("DELETE", config.PanelURL+"/api/application/"+endpoint, nil)
-	default:
 	}
 
 	//Sets request header for the http request
@@ -119,7 +116,7 @@ func (config *CrocConfig) queryPanelAPI(endpoint, request string, data []byte) (
 		return nil, err
 	}
 
-	if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 202 && resp.StatusCode != 204 {
+	if resp.StatusCode < 200 || resp.StatusCode < 204 {
 		bodyBytes, _ = ioutil.ReadAll(resp.Body)
 		return bodyBytes, errors.New(string(bodyBytes))
 	}
@@ -132,7 +129,10 @@ func (config *CrocConfig) queryPanelAPI(endpoint, request string, data []byte) (
 	resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	//Close response thread
-	defer resp.Body.Close()
+	err =  resp.Body.Close()
+	if err != nil {
+		return bodyBytes, errors.New("unable to close response body")
+	}
 
 	//return byte structure
 	return bodyBytes, nil
