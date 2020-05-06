@@ -38,7 +38,7 @@ type Pagination struct {
 	PerPage     int     `json:"per_page,omitempty"`
 	CurrentPage int     `json:"current_page,omitempty"`
 	TotalPages  int     `json:"total_pages,omitempty"`
-	Links       []Links `json:"links"`
+	Links       Links `json:"links"`
 }
 
 // Links is the struct for the links in the Pagination struct
@@ -77,6 +77,7 @@ func NewCrocConfig(panelURL string, clientToken string, appToken string) (config
 		return config, errors.New("at least one api token is required")
 	}
 
+	config = &CrocConfig{}
 	config.PanelURL = panelURL
 	config.ClientToken = clientToken
 	config.AppToken = appToken
