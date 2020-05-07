@@ -132,3 +132,23 @@ func (config *CrocConfig) SetServerPowerState(serverId string, signal string) er
 
 	return nil
 }
+
+// SendServerCommand sends a console command to the server of the specified identifier.
+func (config *CrocConfig) SendServerCommand(serverId string, command string) error {
+
+	endpoint := fmt.Sprintf("servers/%s/command", serverId)
+
+	svCommand := ClientServerConsoleCommand{Command: command}
+	body, err := json.Marshal(svCommand)
+	if err != nil {
+		return err
+	}
+
+	// get json bytes from the panel.
+	_, err = config.queryPanelClient(endpoint, "post", body)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

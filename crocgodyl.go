@@ -2,7 +2,6 @@ package crocgodyl
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -11,7 +10,7 @@ import (
 )
 
 // VERSION of crocgodyl follows Semantic Versioning. (http://semver.org/)
-const VERSION = "0.0.4-alpha"
+const VERSION = "0.0.5-alpha"
 
 // ErrorResponse is the response from the panels for errors.
 type ErrorResponse struct {
@@ -151,10 +150,4 @@ func (config *CrocConfig) queryPanelCallback(sector, token, endpoint, request st
 
 	//return byte structure
 	return bodyBytes, nil
-}
-
-func printJSON(b []byte) ([]byte, error) {
-	var out bytes.Buffer
-	err := json.Indent(&out, b, "", "  ")
-	return out.Bytes(), err
 }
