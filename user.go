@@ -133,14 +133,14 @@ func (config *CrocConfig) CreateUser(newUser UserAttributes) (User, error) {
 	}
 
 	// get json bytes from the panel.
-	ubytes, err := config.queryPanelAPI("users", "post", nUBytes)
+	uBytes, err := config.queryPanelAPI("users", "post", nUBytes)
 	if err != nil {
 		return userDetails, err
 	}
 
 	// Get user info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(ubytes, &userDetails)
+	err = json.Unmarshal(uBytes, &userDetails)
 	if err != nil {
 		return userDetails, err
 	}

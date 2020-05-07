@@ -1,7 +1,19 @@
 package crocgodyl
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 // --------------------------------------------------------------
 // Client API
+
+const (
+	ServerSignalStart  = "start"
+	ServerSignalStop    = "stop"
+	ServerSignalRestart = "restart"
+	ServerSignalKill    = "kill"
+)
 
 // Client Server API
 
@@ -12,12 +24,12 @@ type ClientServers struct {
 	ClientServer []ClientServer `json:"data"`
 	Meta         struct {
 		Pagination struct {
-			Total       int           `json:"total"`
-			Count       int           `json:"count"`
-			PerPage     int           `json:"per_page"`
-			CurrentPage int           `json:"current_page"`
-			TotalPages  int           `json:"total_pages"`
-			Links       []interface{} `json:"links"`
+			Total       int         `json:"total"`
+			Count       int         `json:"count"`
+			PerPage     int         `json:"per_page"`
+			CurrentPage int         `json:"current_page"`
+			TotalPages  int         `json:"total_pages"`
+			Links       interface{} `json:"links"`
 		} `json:"pagination"`
 	} `json:"meta"`
 }
@@ -78,4 +90,45 @@ type ClientServerConsoleCommand struct {
 // GET this from the '/api/client/servers/<server_ID>/power' endpoint
 type ClientServerPowerAction struct {
 	Signal string `json:"signal"`
+}
+
+// GetClientServers retrieves the server associated with the client.
+func (config *CrocConfig) GetClientServers() (*ClientServers, error) {
+	var servers *ClientServers
+
+	// get json bytes from the panel.
+	bytes, err := config.queryPanelClient("", "get", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get server info from the panel
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(bytes, &servers)
+	if err != nil {
+		return nil, err
+	}
+
+	return servers, nil
+}
+
+
+// SetServerPowerState changes the power state of a server.
+func (config *CrocConfig) SetServerPowerState(serverId string, signal string) error {
+
+	endpoint := fmt.Sprintf("servers/%s/power", serverId)
+
+	svPowerAction := ClientServerPowerAction{Signal: signal}
+	body, err := json.Marshal(svPowerAction)
+	if err != nil {
+		return err
+	}
+
+	// get json bytes from the panel.
+	_, err = config.queryPanelClient(endpoint, "post", body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

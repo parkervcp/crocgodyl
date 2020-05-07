@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 // VERSION of crocgodyl follows Semantic Versioning. (http://semver.org/)
-const VERSION = "0.0.3-alpha"
+const VERSION = "0.0.4-alpha"
 
 // ErrorResponse is the response from the panels for errors.
 type ErrorResponse struct {
@@ -55,7 +57,7 @@ type Links struct {
 type CrocConfig struct {
 	PanelURL    string
 	ClientToken string
-	AppToken    string
+	APIToken    string
 }
 
 //
@@ -80,7 +82,7 @@ func NewCrocConfig(panelURL string, clientToken string, appToken string) (config
 	config = &CrocConfig{}
 	config.PanelURL = panelURL
 	config.ClientToken = clientToken
-	config.AppToken = appToken
+	config.APIToken = appToken
 
 	// validate the server is up and available
 	if _, err = config.GetUsers(); err != nil {
@@ -91,23 +93,36 @@ func NewCrocConfig(panelURL string, clientToken string, appToken string) (config
 }
 
 func (config *CrocConfig) queryPanelAPI(endpoint, request string, data []byte) ([]byte, error) {
+	return config.queryPanelCallback("application", config.APIToken, endpoint, request, data)
+}
+
+func (config *CrocConfig) queryPanelClient(endpoint, request string, data []byte) ([]byte, error) {
+	return config.queryPanelCallback("client", config.ClientToken, endpoint, request, data)
+}
+
+func (config *CrocConfig) queryPanelCallback(sector, token, endpoint, request string, data []byte) ([]byte, error) {
 	var bodyBytes []byte
 
 	client := &http.Client{}
-	req, _ := http.NewRequest("GET", config.PanelURL+"/api/application/"+endpoint, nil)
+	url := fmt.Sprintf("%s/api/%s/%s", config.PanelURL, sector, endpoint)
 
-	switch {
-	case request == "post":
-		req, _ = http.NewRequest("POST", config.PanelURL+"/api/application/"+endpoint, bytes.NewBuffer(data))
-	case request == "patch":
-		req, _ = http.NewRequest("PATCH", config.PanelURL+"/api/application/"+endpoint, bytes.NewBuffer(data))
-	case request == "delete":
-		req, _ = http.NewRequest("DELETE", config.PanelURL+"/api/application/"+endpoint, nil)
+	var req *http.Request
+	switch strings.ToLower(request){
+	case "get":
+		req, _  = http.NewRequest("GET", url, nil)
+	case "post":
+		req, _ = http.NewRequest("POST", url, bytes.NewBuffer(data))
+	case "patch":
+		req, _ = http.NewRequest("PATCH", url, bytes.NewBuffer(data))
+	case "delete":
+		req, _ = http.NewRequest("DELETE", url, nil)
+	default:
+		return nil, errors.New("method not allowed")
 	}
 
 	//Sets request header for the http request
-	req.Header.Add("Authorization", "Bearer "+config.AppToken)
-	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", "Bearer " + token)
+	req.Header.Add("Accept", "Application/vnd.pterodactyl.v1+json")
 	req.Header.Set("Content-Type", "application/json")
 
 	//send request
