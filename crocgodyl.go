@@ -102,30 +102,9 @@ func (config *CrocConfig) queryPanelClient(endpoint, request string, data []byte
 func (config *CrocConfig) queryPanelCallback(sector, token, endpoint, request string, data []byte) ([]byte, error) {
 	var bodyBytes []byte
 
-	client := &http.Client{}
 	url := fmt.Sprintf("%s/api/%s/%s", config.PanelURL, sector, endpoint)
 
-	var req *http.Request
-	switch strings.ToLower(request){
-	case "get":
-		req, _  = http.NewRequest("GET", url, nil)
-	case "post":
-		req, _ = http.NewRequest("POST", url, bytes.NewBuffer(data))
-	case "patch":
-		req, _ = http.NewRequest("PATCH", url, bytes.NewBuffer(data))
-	case "delete":
-		req, _ = http.NewRequest("DELETE", url, nil)
-	default:
-		return nil, errors.New("method not allowed")
-	}
-
-	//Sets request header for the http request
-	req.Header.Add("Authorization", "Bearer " + token)
-	req.Header.Add("Accept", "Application/vnd.pterodactyl.v1+json")
-	req.Header.Set("Content-Type", "application/json")
-
-	//send request
-	resp, err := client.Do(req)
+	resp, err := queryURL(url, request, token, data)
 	if err != nil {
 		return nil, err
 	}
@@ -150,4 +129,30 @@ func (config *CrocConfig) queryPanelCallback(sector, token, endpoint, request st
 
 	//return byte structure
 	return bodyBytes, nil
+}
+
+func queryURL(url, request, token string, data []byte) (*http.Response, error) {
+	client := &http.Client{}
+
+	var req *http.Request
+	switch strings.ToLower(request){
+	case "get":
+		req, _  = http.NewRequest("GET", url, nil)
+	case "post":
+		req, _ = http.NewRequest("POST", url, bytes.NewBuffer(data))
+	case "patch":
+		req, _ = http.NewRequest("PATCH", url, bytes.NewBuffer(data))
+	case "delete":
+		req, _ = http.NewRequest("DELETE", url, nil)
+	default:
+		return nil, errors.New("method not allowed")
+	}
+
+	//Sets request header for the http request
+	req.Header.Add("Authorization", "Bearer " + token)
+	req.Header.Add("Accept", "Application/vnd.pterodactyl.v1+json")
+	req.Header.Set("Content-Type", "application/json")
+
+	//send request
+	return client.Do(req)
 }

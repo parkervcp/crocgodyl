@@ -3,6 +3,7 @@ package crocgodyl
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 )
 
 // --------------------------------------------------------------
@@ -24,12 +25,12 @@ type ClientServers struct {
 	ClientServer []ClientServer `json:"data"`
 	Meta         struct {
 		Pagination struct {
-			Total       int         `json:"total"`
-			Count       int         `json:"count"`
-			PerPage     int         `json:"per_page"`
-			CurrentPage int         `json:"current_page"`
-			TotalPages  int         `json:"total_pages"`
-			Links       interface{} `json:"links"`
+			Total       int               `json:"total"`
+			Count       int               `json:"count"`
+			PerPage     int               `json:"per_page"`
+			CurrentPage int               `json:"current_page"`
+			TotalPages  int               `json:"total_pages"`
+			Links       map[string]string `json:"links"`
 		} `json:"pagination"`
 	} `json:"meta"`
 }
@@ -93,7 +94,7 @@ type ClientServerPowerAction struct {
 }
 
 // GetClientServers retrieves the server associated with the client.
-func (config *CrocConfig) GetClientServers() (*ClientServers, error) {
+func (config *CrocConfig) GetClientServers(pagination bool) (*ClientServers, error) {
 	var servers *ClientServers
 
 	// get json bytes from the panel.
@@ -108,6 +109,27 @@ func (config *CrocConfig) GetClientServers() (*ClientServers, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if !pagination {
+		// Get all pages
+		for _, next := range servers.Meta.Pagination.Links {
+			res, err := queryURL(next, "get", config.ClientToken, nil)
+			if err != nil {
+				return nil, err
+			}
+
+			bodyBytes, _ := ioutil.ReadAll(res.Body)
+
+			var serverPage *ClientServers
+			err = json.Unmarshal(bodyBytes, &serverPage)
+			if err != nil {
+				return nil, err
+			}
+
+			servers.ClientServer = append(servers.ClientServer, serverPage.ClientServer...)
+		}
+	}
+
 
 	return servers, nil
 }
