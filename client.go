@@ -42,7 +42,6 @@ type ClientServer struct {
 	Attributes struct {
 		ServerOwner bool   `json:"server_owner"`
 		Identifier  string `json:"identifier"`
-		UUID        string `json:"uuid"`
 		Name        string `json:"name"`
 		Description string `json:"description"`
 		Limits      struct {
@@ -53,9 +52,22 @@ type ClientServer struct {
 			CPU    int `json:"cpu"`
 		} `json:"limits"`
 		FeatureLimits struct {
-			Databases   int `json:"databases"`
-			Allocations int `json:"allocations"`
+			Databases int `json:"databases"`
 		} `json:"feature_limits"`
+		Relationships struct {
+			Allocations struct {
+				Object string `json:"object"`
+				Data   []struct {
+					Object     string `json:"object"`
+					Attributes struct {
+						Primary bool   `json:"primary"`
+						IP      string `json:"ip"`
+						Alias   string `json:"alias"`
+						Port    int    `json:"port"`
+					} `json:"attributes"`
+				} `json:"data"`
+			} `json:"allocations"`
+		} `json:"relationships"`
 	} `json:"attributes"`
 }
 
@@ -93,7 +105,7 @@ type ClientServerPowerAction struct {
 	Signal string `json:"signal"`
 }
 
-// GetClientServers retrieves the server associated with the client.
+// GetClientServers retrieves the servers associated with the client.
 func (config *CrocConfig) GetClientServers(pagination bool) (*ClientServers, error) {
 	var servers *ClientServers
 
@@ -134,6 +146,28 @@ func (config *CrocConfig) GetClientServers(pagination bool) (*ClientServers, err
 	return servers, nil
 }
 
+// GetClientServer retrieves a server associated with the provided id.
+func (config *CrocConfig) GetClientServer(serverId string) (*ClientServer, error) {
+	var server *ClientServer
+
+	endpoint := fmt.Sprintf("servers/%s?include=allocations", serverId)
+
+	// get json bytes from the panel.
+	bytes, err := config.queryPanelClient(endpoint, "get", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get server info from the panel
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(bytes, &server)
+	if err != nil {
+		return nil, err
+	}
+
+	return server, nil
+}
+
 
 // SetServerPowerState changes the power state of a server.
 func (config *CrocConfig) SetServerPowerState(serverId string, signal string) error {
@@ -166,11 +200,34 @@ func (config *CrocConfig) SendServerCommand(serverId string, command string) err
 		return err
 	}
 
-	// get json bytes from the panel.
+	// get json bytes from the panel
 	_, err = config.queryPanelClient(endpoint, "post", body)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// GetClientServerUtilization fetches the usage data for a server.
+func (config *CrocConfig) GetClientServerUtilization(serverId string) (*ClientServerUtilization, error) {
+
+	endpoint := fmt.Sprintf("servers/%s/utilization", serverId)
+
+	// get json bytes from the panel
+	bytes, err := config.queryPanelClient(endpoint, "get", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	utilization := &ClientServerUtilization{}
+
+	// Get utilization info from the panel
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(bytes, &utilization)
+	if err != nil {
+		return nil, err
+	}
+
+	return utilization, nil
 }

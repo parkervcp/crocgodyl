@@ -166,14 +166,14 @@ func (config *CrocConfig) GetServerAllocations(serverId int) ([]int, error) {
 	var allServerAlloc []int
 
 	// get json bytes from the panel.
-	sabytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverId)+"?include=allocations", "get", nil)
+	svAllocBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverId)+"?include=allocations", "get", nil)
 	if err != nil {
 		return allServerAlloc, err
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(sabytes, &allServerAlloc)
+	err = json.Unmarshal(svAllocBytes, &allServerAlloc)
 	if err != nil {
 		return allServerAlloc, err
 	}
@@ -207,7 +207,7 @@ func (config *CrocConfig) CreateServer(newServer ServerChange) (Server, error) {
 	return serverDetails, nil
 }
 
-// EditServerDetails creates a new server via the API.
+// EditServerDetails edits the server details for the specified server.
 // The server name and user are required when updating a server.
 func (config *CrocConfig) EditServerDetails(newServer ServerChange, serverid int) (Server, error) {
 	var serverDetails Server
@@ -233,7 +233,7 @@ func (config *CrocConfig) EditServerDetails(newServer ServerChange, serverid int
 	return serverDetails, nil
 }
 
-// EditServerBuild creates a new server via the API.
+// EditServerBuild edits the build information for the specified server.
 // The server name and user are required when updating a server.
 func (config *CrocConfig) EditServerBuild(newServer ServerChange, serverid int) (Server, error) {
 	var serverDetails Server
@@ -259,7 +259,7 @@ func (config *CrocConfig) EditServerBuild(newServer ServerChange, serverid int) 
 	return serverDetails, nil
 }
 
-// EditServerStartup creates a new server via the API.
+// EditServerStartup edits the startup information for the specified server.
 // The server name and user are required when updating a server.
 func (config *CrocConfig) EditServerStartup(newServer ServerChange, serverid int) (Server, error) {
 	var serverDetails Server
