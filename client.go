@@ -19,7 +19,6 @@ const (
 // Client Server API
 
 // ClientServers is the default all servers view for the client API.
-// GET this from the '/api/client' endpoint
 type ClientServers struct {
 	Object       string         `json:"object"`
 	ClientServer []ClientServer `json:"data"`
@@ -36,7 +35,6 @@ type ClientServers struct {
 }
 
 // ClientServer is the server object view returning single server information.
-// GET this from the '/api/client/servers/<server_ID>' endpoint
 type ClientServer struct {
 	Object     string `json:"object"`
 	Attributes struct {
@@ -72,7 +70,6 @@ type ClientServer struct {
 }
 
 // ClientServerUtilization is the server statistics reported by the daemon.
-// GET this from the '/api/client/servers/<server_ID>/utilization' endpoint
 type ClientServerUtilization struct {
 	Object     string `json:"object"`
 	Attributes struct {
@@ -94,13 +91,11 @@ type ClientServerUtilization struct {
 }
 
 // ClientServerConsoleCommand is the struct for sending a command for the server console
-// GET this from the '/api/client/servers/<server_ID>/command' endpoint
 type ClientServerConsoleCommand struct {
 	Command string `json:"command"`
 }
 
 // ClientServerPowerAction is the struct for sending a power command for the server
-// GET this from the '/api/client/servers/<server_ID>/power' endpoint
 type ClientServerPowerAction struct {
 	Signal string `json:"signal"`
 }

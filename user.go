@@ -42,7 +42,7 @@ type UserAttributes struct {
 	UpdatedAt  time.Time `json:"updated_at,omitempty"`
 }
 
-// GetUsers returns Information on all users.
+// GetUsers returns information on all users.
 func (config *CrocConfig) GetUsers() (Users, error) {
 	var users Users
 
@@ -61,7 +61,7 @@ func (config *CrocConfig) GetUsers() (Users, error) {
 	return users, nil
 }
 
-// GetUser returns Information on a single user.
+// GetUser returns information on a single user.
 func (config *CrocConfig) GetUser(userID int) (User, error) {
 	var user User
 	endpoint := fmt.Sprintf("users/%d", userID)
@@ -81,8 +81,7 @@ func (config *CrocConfig) GetUser(userID int) (User, error) {
 	return user, nil
 }
 
-// GetUserByExternal returns Information on a single user by their externalID.
-// The externalID is a string as that is what the panel requires.
+// GetUserByExternal returns information on a single user by their external id.
 func (config *CrocConfig) GetUserByExternal(externalID string) (User, error) {
 	var user User
 	endpoint := fmt.Sprintf("users/%s", externalID)
@@ -102,8 +101,7 @@ func (config *CrocConfig) GetUserByExternal(externalID string) (User, error) {
 	return user, nil
 }
 
-// GetUserByPage returns Information on users by their page number.
-// The externalID is a string as that is what the panel requires.
+// GetUserByPage returns information on users by their page number.
 func (config *CrocConfig) GetUserByPage(pageID int) (User, error) {
 	var user User
 	endpoint := fmt.Sprintf("users/%d", pageID)
@@ -148,9 +146,7 @@ func (config *CrocConfig) CreateUser(newUser UserAttributes) (User, error) {
 	return userDetails, nil
 }
 
-// EditUser creates a user.
-// Send a UserAttributes to the panel to update the user.
-// You cannot edit the id or created/updated fields for the user.
+// EditUser edits the information of a specified user.
 func (config *CrocConfig) EditUser(editUser UserAttributes, userID int) (User, error) {
 	var userDetails User
 	endpoint := fmt.Sprintf("users/%d", userID)
@@ -177,7 +173,6 @@ func (config *CrocConfig) EditUser(editUser UserAttributes, userID int) (User, e
 }
 
 // DeleteUser deletes a user.
-// It only requires a user id as a string
 func (config *CrocConfig) DeleteUser(userID int) error {
 	endpoint := fmt.Sprintf("users/%d", userID)
 

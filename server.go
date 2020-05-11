@@ -141,7 +141,7 @@ func (config *CrocConfig) GetServers() (Servers, error) {
 	return servers, nil
 }
 
-// GetServer returns Information on a single server.
+// GetServer returns information on a single server.
 func (config *CrocConfig) GetServer(serverId int) (Server, error) {
 	var server Server
 
@@ -208,8 +208,8 @@ func (config *CrocConfig) CreateServer(newServer ServerChange) (Server, error) {
 }
 
 // EditServerDetails edits the server details for the specified server.
-// The server name and user are required when updating a server.
-func (config *CrocConfig) EditServerDetails(newServer ServerChange, serverid int) (Server, error) {
+// The server id and user are required when updating a server.
+func (config *CrocConfig) EditServerDetails(newServer ServerChange, serverId int) (Server, error) {
 	var serverDetails Server
 
 	esBytes, err := json.Marshal(newServer)
@@ -218,7 +218,7 @@ func (config *CrocConfig) EditServerDetails(newServer ServerChange, serverid int
 	}
 
 	// get json bytes from the panel.
-	sBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/details", "patch", esBytes)
+	sBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverId)+"/details", "patch", esBytes)
 	if err != nil {
 		return serverDetails, err
 	}
@@ -234,8 +234,8 @@ func (config *CrocConfig) EditServerDetails(newServer ServerChange, serverid int
 }
 
 // EditServerBuild edits the build information for the specified server.
-// The server name and user are required when updating a server.
-func (config *CrocConfig) EditServerBuild(newServer ServerChange, serverid int) (Server, error) {
+// The server id and user are required when updating a server.
+func (config *CrocConfig) EditServerBuild(newServer ServerChange, serverId int) (Server, error) {
 	var serverDetails Server
 
 	esBytes, err := json.Marshal(newServer)
@@ -244,7 +244,7 @@ func (config *CrocConfig) EditServerBuild(newServer ServerChange, serverid int) 
 	}
 
 	// get json bytes from the panel.
-	sBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/build", "patch", esBytes)
+	sBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverId)+"/build", "patch", esBytes)
 	if err != nil {
 		return serverDetails, err
 	}
@@ -260,8 +260,8 @@ func (config *CrocConfig) EditServerBuild(newServer ServerChange, serverid int) 
 }
 
 // EditServerStartup edits the startup information for the specified server.
-// The server name and user are required when updating a server.
-func (config *CrocConfig) EditServerStartup(newServer ServerChange, serverid int) (Server, error) {
+// The server id and user are required when updating a server.
+func (config *CrocConfig) EditServerStartup(newServer ServerChange, serverId int) (Server, error) {
 	var serverDetails Server
 
 	esBytes, err := json.Marshal(newServer)
@@ -270,7 +270,7 @@ func (config *CrocConfig) EditServerStartup(newServer ServerChange, serverid int
 	}
 
 	// get json bytes from the panel.
-	sBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/startup", "patch", esBytes)
+	sBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverId)+"/startup", "patch", esBytes)
 	if err != nil {
 		return serverDetails, err
 	}
@@ -286,7 +286,7 @@ func (config *CrocConfig) EditServerStartup(newServer ServerChange, serverid int
 }
 
 // DeleteServer deletes a server.
-// It only requires a server id as a string
+// It only requires a server id
 func (config *CrocConfig) DeleteServer(serverId int) error {
 	// get json bytes from the panel.
 	_, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverId), "delete", nil)

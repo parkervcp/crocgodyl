@@ -92,7 +92,7 @@ type Egg struct {
 	} `json:"attributes"`
 }
 
-// GetNests returns all available nodes.
+// GetNests returns all available nests.
 func (config *CrocConfig) GetNests() (Nests, error) {
 	var nests Nests
 
@@ -111,7 +111,7 @@ func (config *CrocConfig) GetNests() (Nests, error) {
 	return nests, nil
 }
 
-// GetEggs returns all available nodes.
+// GetEggs returns all available eggs.
 func (config *CrocConfig) GetEggs() (Eggs, error) {
 	var eggs Eggs
 
