@@ -300,7 +300,7 @@ func (config *CrocConfig) DeleteServer(serverid int) error {
 
 //ExecuteCommand executes a command
 //It requires a serverID as an int, a command as a string and a config
-func executeCommand(serverID int, command string, config *CrocConfig) error {
+func (config *CrocConfig) executeCommand(serverID int, command string) error {
 	var server Server
 	server, err := config.GetServer(serverID)
 	if err != nil {
