@@ -33,11 +33,11 @@ type Meta struct {
 
 // Pagination is the information how many responses there on a page and how many pages there are.
 type Pagination struct {
-	Total       int     `json:"total,omitempty"`
-	Count       int     `json:"count,omitempty"`
-	PerPage     int     `json:"per_page,omitempty"`
-	CurrentPage int     `json:"current_page,omitempty"`
-	TotalPages  int     `json:"total_pages,omitempty"`
+	Total       int   `json:"total,omitempty"`
+	Count       int   `json:"count,omitempty"`
+	PerPage     int   `json:"per_page,omitempty"`
+	CurrentPage int   `json:"current_page,omitempty"`
+	TotalPages  int   `json:"total_pages,omitempty"`
 	Links       Links `json:"links"`
 }
 
@@ -110,6 +110,54 @@ func (config *CrocConfig) queryPanelAPI(endpoint, request string, data []byte) (
 
 	//Sets request header for the http request
 	req.Header.Add("Authorization", "Bearer "+config.AppToken)
+	req.Header.Add("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	//send request
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 202 && resp.StatusCode != 204 {
+		bodyBytes, _ = ioutil.ReadAll(resp.Body)
+		return bodyBytes, errors.New(string(bodyBytes))
+	}
+
+	if resp.Body != nil {
+		bodyBytes, _ = ioutil.ReadAll(resp.Body)
+	}
+
+	//set bodyBytes to the response body
+	resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	//Close response thread
+	defer resp.Body.Close()
+
+	//return byte structure
+	return bodyBytes, nil
+}
+
+func (config *CrocConfig) queryClientAPI(endpoint, request string, data []byte) ([]byte, error) {
+	//var for response body byte
+	var bodyBytes []byte
+	//http get json request
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", config.PanelURL+"/api/client/"+endpoint, nil)
+
+	switch {
+	case request == "get":
+	case request == "post":
+		req, _ = http.NewRequest("POST", config.PanelURL+"/api/client/"+endpoint, bytes.NewBuffer(data))
+	case request == "patch":
+		req, _ = http.NewRequest("PATCH", config.PanelURL+"/api/client/"+endpoint, bytes.NewBuffer(data))
+	case request == "delete":
+		req, _ = http.NewRequest("DELETE", config.PanelURL+"/api/client/"+endpoint, nil)
+	default:
+	}
+
+	//Sets request header for the http request
+	req.Header.Add("Authorization", "Bearer "+config.ClientToken)
 	req.Header.Add("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
