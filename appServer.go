@@ -147,7 +147,7 @@ func (config *CrocConfig) GetServer(serverid int) (Server, error) {
 	var server Server
 
 	// get json bytes from the panel.
-	sbytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
+	sbytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid), "get", nil)
 	if err != nil {
 		return server, err
 	}
