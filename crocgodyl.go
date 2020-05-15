@@ -38,7 +38,7 @@ type Pagination struct {
 	PerPage     int     `json:"per_page,omitempty"`
 	CurrentPage int     `json:"current_page,omitempty"`
 	TotalPages  int     `json:"total_pages,omitempty"`
-	Links       []Links `json:"links"`
+	Links       Links `json:"links"`
 }
 
 // Links is the struct for the links in the Pagination struct
