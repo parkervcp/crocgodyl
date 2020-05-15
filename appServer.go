@@ -300,13 +300,13 @@ func (config *CrocConfig) DeleteServer(serverid int) error {
 
 //ExecuteCommand executes a command
 //It requires a serverID as an int, a command as a string and a config
-func (config *CrocConfig) ExecuteCommand(serverID int, command string) error {
+func executeCommand(serverID int, command string, config *CrocConfig) error {
 	var server Server
 	server, err := config.GetServer(serverID)
 	if err != nil {
 		return err
 	}
-	_, err = config.queryClientAPI("servers/"+strconv.Itoa(server.Attributes.ID), command, nil)
+	_, err = config.queryClientAPI("servers/"+strconv.Itoa(server.Attributes.ID), "post", []byte(command))
 	fmt.Println(server.Attributes.ID)
 	if err != nil {
 		return err
