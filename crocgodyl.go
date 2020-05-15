@@ -77,6 +77,7 @@ func NewCrocConfig(panelURL string, clientToken string, appToken string) (config
 		return config, errors.New("at least one api token is required")
 	}
 
+	config = &CrocConfig{}
 	config.PanelURL = panelURL
 	config.ClientToken = clientToken
 	config.AppToken = appToken
