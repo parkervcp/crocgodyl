@@ -2,6 +2,7 @@ package crocgodyl
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -290,6 +291,21 @@ func (config *CrocConfig) EditServerStartup(newServer ServerChange, serverid int
 func (config *CrocConfig) DeleteServer(serverid int) error {
 	// get json bytes from the panel.
 	_, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid), "delete", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func executeCommand(serverID int, command string, config *CrocConfig) error {
+	var server Server
+	server, err := config.GetServer(serverID)
+	if err != nil {
+		return err
+	}
+	_, err = config.queryClientAPI("servers/"+strconv.Itoa(server.Attributes.ID), command, nil)
+	fmt.Println(server.Attributes.ID)
 	if err != nil {
 		return err
 	}
