@@ -144,7 +144,6 @@ func (config *CrocConfig) queryClientAPI(endpoint, request string, data []byte) 
 	//http get json request
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", config.PanelURL+"/api/client/"+endpoint, nil)
-
 	switch {
 	case request == "get":
 	case request == "post":

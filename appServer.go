@@ -304,7 +304,7 @@ func (config *CrocConfig) ExecuteCommand(serverID string, command string) error 
 	if err != nil {
 		return err
 	}
-	_, err = config.queryClientAPI("servers/"+serverID, "post", esbytes)
+	_, err = config.queryClientAPI("servers/"+serverID+"/command", "post", esbytes)
 	if err != nil {
 		return err
 	}
