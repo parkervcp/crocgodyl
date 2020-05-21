@@ -233,6 +233,30 @@ func (config *CrocConfig) EditServerDetails(newServer ServerChange, serverid int
 	return serverDetails, nil
 }
 
+//UnsuspendServer unsuspends a Server identified by ServerID as int
+func (config *CrocConfig) UnsuspendServer(serverid int) error {
+
+	// get json bytes from the panel.
+	_, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/unsuspend", "post", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//SuspendServer suspends a Server identified by ServerID as int
+func (config *CrocConfig) SuspendServer(serverid int) error {
+
+	// get json bytes from the panel.
+	_, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/suspend", "post", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // EditServerBuild creates a new server via the API.
 // The server name and user are required when updating a server.
 func (config *CrocConfig) EditServerBuild(newServer ServerChange, serverid int) (Server, error) {
