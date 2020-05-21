@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	croc "github.com/parkervcp/crocgodyl"
+	croc "github.com/skyplayertv/crocgodyl"
 )
 
 var (
