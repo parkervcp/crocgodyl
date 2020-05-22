@@ -1,5 +1,7 @@
 package crocgodyl
 
+import "encoding/json"
+
 // --------------------------------------------------------------
 // Client API
 
@@ -78,4 +80,19 @@ type ClientServerConsoleCommand struct {
 // GET this from the '/api/client/servers/<server_ID>/power' endpoint
 type ClientServerPowerAction struct {
 	Signal string `json:"signal"`
+}
+
+//ExecuteCommand executes a command
+//It requires a serverID as an int, a command as a string and a config
+func (config *CrocConfig) ExecuteCommand(serverID string, command string) error {
+	esbytes, err := json.Marshal(&ClientServerConsoleCommand{Command: command})
+	if err != nil {
+		return err
+	}
+	_, err = config.queryClientAPI("servers/"+serverID+"/command", "post", esbytes)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -321,17 +321,4 @@ func (config *CrocConfig) DeleteServer(serverid int) error {
 	return nil
 }
 
-//ExecuteCommand executes a command
-//It requires a serverID as an int, a command as a string and a config
-func (config *CrocConfig) ExecuteCommand(serverID string, command string) error {
-	esbytes, err := json.Marshal(&ClientServerConsoleCommand{Command: command})
-	if err != nil {
-		return err
-	}
-	_, err = config.queryClientAPI("servers/"+serverID+"/command", "post", esbytes)
-	if err != nil {
-		return err
-	}
 
-	return nil
-}
