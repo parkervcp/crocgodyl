@@ -63,14 +63,14 @@ func (config *CrocConfig) GetLocation(locationID int) (Location, error) {
 	var location Location
 	endpoint := fmt.Sprintf("locations/%d", locationID)
 
-	lbytes, err := config.queryPanelAPI(endpoint, "get", nil)
+	locBytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return location, err
 	}
 
 	// Get node info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(lbytes, &location)
+	err = json.Unmarshal(locBytes, &location)
 	if err != nil {
 		return location, err
 	}
@@ -83,14 +83,14 @@ func (config *CrocConfig) GetLocationByPage(pageID int) (Locations, error) {
 	var locations Locations
 	endpoint := fmt.Sprintf("locations?page=%d", pageID)
 
-	lbytes, err := config.queryPanelAPI(endpoint, "get", nil)
+	locBytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return locations, err
 	}
 
 	// Get node info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(lbytes, &locations)
+	err = json.Unmarshal(locBytes, &locations)
 	if err != nil {
 		return locations, err
 	}
@@ -102,20 +102,20 @@ func (config *CrocConfig) GetLocationByPage(pageID int) (Locations, error) {
 func (config *CrocConfig) CreateLocation(newLocation LocationAttributes) (Location, error) {
 	var locationDetails Location
 
-	nlbytes, err := json.Marshal(newLocation)
+	newLocBytes, err := json.Marshal(newLocation)
 	if err != nil {
 		return locationDetails, err
 	}
 
 	// get json bytes from the panel.
-	lbytes, err := config.queryPanelAPI("locations/", "post", nlbytes)
+	locBytes, err := config.queryPanelAPI("locations/", "post", newLocBytes)
 	if err != nil {
 		return locationDetails, err
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(lbytes, &locationDetails)
+	err = json.Unmarshal(locBytes, &locationDetails)
 	if err != nil {
 		return locationDetails, err
 	}
@@ -128,20 +128,20 @@ func (config *CrocConfig) EditLocation(editLocation LocationAttributes, location
 	var locationDetails Location
 	endpoint := fmt.Sprintf("locations/%d", locationID)
 
-	elbytes, err := json.Marshal(editLocation)
+	editLocBytes, err := json.Marshal(editLocation)
 	if err != nil {
 		return locationDetails, err
 	}
 
 	// get json bytes from the panel.
-	lbytes, err := config.queryPanelAPI(endpoint, "patch", elbytes)
+	locBytes, err := config.queryPanelAPI(endpoint, "patch", editLocBytes)
 	if err != nil {
 		return locationDetails, err
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(lbytes, &locationDetails)
+	err = json.Unmarshal(locBytes, &locationDetails)
 	if err != nil {
 		return locationDetails, err
 	}
