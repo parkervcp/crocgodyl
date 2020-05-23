@@ -2,7 +2,6 @@ package crocgodyl
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -38,13 +37,6 @@ type Pagination struct {
 	PerPage     int     `json:"per_page,omitempty"`
 	CurrentPage int     `json:"current_page,omitempty"`
 	TotalPages  int     `json:"total_pages,omitempty"`
-	Links       []Links `json:"links"`
-}
-
-// Links is the struct for the links in the Pagination struct
-type Links struct {
-	Previous string `json:"previous,omitempty"`
-	Next     string `json:"next,omitempty"`
 }
 
 //
@@ -137,10 +129,4 @@ func (config *CrocConfig) queryPanelAPI(endpoint, request string, data []byte) (
 
 	//return byte structure
 	return bodyBytes, nil
-}
-
-func printJSON(b []byte) ([]byte, error) {
-	var out bytes.Buffer
-	err := json.Indent(&out, b, "", "  ")
-	return out.Bytes(), err
 }
