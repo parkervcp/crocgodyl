@@ -74,14 +74,14 @@ func (config *CrocConfig) GetNode(nodeID int) (Node, error) {
 	var node Node
 	endpoint := fmt.Sprintf("nodes/%d", nodeID)
 
-	nbytes, err := config.queryPanelAPI(endpoint, "get", nil)
+	nodeBytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return node, err
 	}
 
 	// Get node info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(nbytes, &node)
+	err = json.Unmarshal(nodeBytes, &node)
 	if err != nil {
 		return node, err
 	}
@@ -95,14 +95,14 @@ func (config *CrocConfig) GetNodesByPage(pageID int) (Nodes, error) {
 	var node Nodes
 	endpoint := fmt.Sprintf("nodes?page=%d", pageID)
 
-	nbytes, err := config.queryPanelAPI(endpoint, "get", nil)
+	nodeBytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return node, err
 	}
 
 	// Get node info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(nbytes, &node)
+	err = json.Unmarshal(nodeBytes, &node)
 	if err != nil {
 		return node, err
 	}
@@ -138,14 +138,14 @@ func (config *CrocConfig) GetNodeAllocationsByPage(nodeID int, pageID int) (Node
 	var allocations NodeAllocations
 	endpoint := fmt.Sprintf("nodes/%d/allocations?page=%d", nodeID, pageID)
 
-	nabytes, err := config.queryPanelAPI(endpoint, "get", nil)
+	nodeAllocBytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return allocations, err
 	}
 
 	// Get node info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(nabytes, &allocations)
+	err = json.Unmarshal(nodeAllocBytes, &allocations)
 	if err != nil {
 		return allocations, err
 	}
@@ -211,20 +211,20 @@ func (config *CrocConfig) CreateNode(newNode NodeAttributes) (Node, error) {
 	var nodeDetails Node
 	endpoint := fmt.Sprintf("nodes/")
 
-	nnbytes, err := json.Marshal(newNode)
+	newNodeBytes, err := json.Marshal(newNode)
 	if err != nil {
 		return nodeDetails, err
 	}
 
 	// get json bytes from the panel.
-	nbytes, err := config.queryPanelAPI(endpoint, "post", nnbytes)
+	nodeBytes, err := config.queryPanelAPI(endpoint, "post", newNodeBytes)
 	if err != nil {
 		return nodeDetails, err
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(nbytes, &nodeDetails)
+	err = json.Unmarshal(nodeBytes, &nodeDetails)
 	if err != nil {
 		return nodeDetails, err
 	}
@@ -236,13 +236,13 @@ func (config *CrocConfig) CreateNode(newNode NodeAttributes) (Node, error) {
 func (config *CrocConfig) CreateNodeAllocations(newNodeAllocations AllocationAttributes, nodeID int) error {
 	endpoint := fmt.Sprintf("nodes/%d/allocations", nodeID)
 
-	nnabytes, err := json.Marshal(newNodeAllocations)
+	newNodeAllocBytes, err := json.Marshal(newNodeAllocations)
 	if err != nil {
 		return err
 	}
 
 	// get json bytes from the panel.
-	_, err = config.queryPanelAPI(endpoint, "post", nnabytes)
+	_, err = config.queryPanelAPI(endpoint, "post", newNodeAllocBytes)
 	if err != nil {
 		return err
 	}
@@ -254,20 +254,20 @@ func (config *CrocConfig) EditNode(editNode NodeAttributes, nodeID int) (Node, e
 	var nodeDetails Node
 	endpoint := fmt.Sprintf("nodes/%d", nodeID)
 
-	enbytes, err := json.Marshal(editNode)
+	editNodeBytes, err := json.Marshal(editNode)
 	if err != nil {
 		return nodeDetails, err
 	}
 
 	// get json bytes from the panel.
-	nbytes, err := config.queryPanelAPI(endpoint, "patch", enbytes)
+	nodeBytes, err := config.queryPanelAPI(endpoint, "patch", editNodeBytes)
 	if err != nil {
 		return nodeDetails, err
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(nbytes, &nodeDetails)
+	err = json.Unmarshal(nodeBytes, &nodeDetails)
 	if err != nil {
 		return nodeDetails, err
 	}
