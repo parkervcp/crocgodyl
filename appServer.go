@@ -105,12 +105,12 @@ type ServerAllocation struct {
 type ServerRealtions struct {
 	Allocations struct {
 		Object string                    `json:"object,omitempty"`
-		Data   []ServerAllocRetalionData `json:"data,omitempty"`
+		Data   []ServerAllocRelationData `json:"data,omitempty"`
 	} `json:"allocations,omitempty"`
 }
 
-// ServerAllocRetalionData is the struct for Allocation Relationships on a Server
-type ServerAllocRetalionData struct {
+// ServerAllocRelationData is the struct for Allocation Relationships on a Server
+type ServerAllocRelationData struct {
 	Object     string `json:"object,omitempty"`
 	Attributes struct {
 		ID       int    `json:"id,omitempty"`
@@ -126,14 +126,14 @@ func (config *CrocConfig) GetServers() (Servers, error) {
 	var servers Servers
 
 	// get json bytes from the panel.
-	sbytes, err := config.queryPanelAPI("servers", "get", nil)
+	serverBytes, err := config.queryPanelAPI("servers", "get", nil)
 	if err != nil {
 		return servers, err
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(sbytes, &servers)
+	err = json.Unmarshal(serverBytes, &servers)
 	if err != nil {
 		return servers, err
 	}
@@ -146,14 +146,14 @@ func (config *CrocConfig) GetServer(serverid int) (Server, error) {
 	var server Server
 
 	// get json bytes from the panel.
-	sbytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
+	serverBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
 	if err != nil {
 		return server, err
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(sbytes, &server)
+	err = json.Unmarshal(serverBytes, &server)
 	if err != nil {
 		return server, err
 	}
@@ -166,14 +166,14 @@ func (config *CrocConfig) GetServerAllocations(serverid int) ([]int, error) {
 	var allServerAlloc []int
 
 	// get json bytes from the panel.
-	sabytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
+	serverAllocBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
 	if err != nil {
 		return allServerAlloc, err
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(sabytes, &allServerAlloc)
+	err = json.Unmarshal(serverAllocBytes, &allServerAlloc)
 	if err != nil {
 		return allServerAlloc, err
 	}
@@ -186,20 +186,20 @@ func (config *CrocConfig) GetServerAllocations(serverid int) ([]int, error) {
 func (config *CrocConfig) CreateServer(newServer ServerChange) (Server, error) {
 	var serverDetails Server
 
-	nsbytes, err := json.Marshal(newServer)
+	newServerBytes, err := json.Marshal(newServer)
 	if err != nil {
 		return serverDetails, err
 	}
 
 	// get json bytes from the panel.
-	sbytes, err := config.queryPanelAPI("servers", "post", nsbytes)
+	serverBytes, err := config.queryPanelAPI("servers", "post", newServerBytes)
 	if err != nil {
 		return serverDetails, err
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(sbytes, &serverDetails)
+	err = json.Unmarshal(serverBytes, &serverDetails)
 	if err != nil {
 		return serverDetails, err
 	}
@@ -212,20 +212,20 @@ func (config *CrocConfig) CreateServer(newServer ServerChange) (Server, error) {
 func (config *CrocConfig) EditServerDetails(newServer ServerChange, serverid int) (Server, error) {
 	var serverDetails Server
 
-	esbytes, err := json.Marshal(newServer)
+	editServerBytes, err := json.Marshal(newServer)
 	if err != nil {
 		return serverDetails, err
 	}
 
 	// get json bytes from the panel.
-	sbytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/details", "patch", esbytes)
+	serverBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/details", "patch", editServerBytes)
 	if err != nil {
 		return serverDetails, err
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(sbytes, &serverDetails)
+	err = json.Unmarshal(serverBytes, &serverDetails)
 	if err != nil {
 		return serverDetails, err
 	}
@@ -238,20 +238,20 @@ func (config *CrocConfig) EditServerDetails(newServer ServerChange, serverid int
 func (config *CrocConfig) EditServerBuild(newServer ServerChange, serverid int) (Server, error) {
 	var serverDetails Server
 
-	esbytes, err := json.Marshal(newServer)
+	editServerBytes, err := json.Marshal(newServer)
 	if err != nil {
 		return serverDetails, err
 	}
 
 	// get json bytes from the panel.
-	sbytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/build", "patch", esbytes)
+	serverBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/build", "patch", editServerBytes)
 	if err != nil {
 		return serverDetails, err
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(sbytes, &serverDetails)
+	err = json.Unmarshal(serverBytes, &serverDetails)
 	if err != nil {
 		return serverDetails, err
 	}
@@ -264,20 +264,20 @@ func (config *CrocConfig) EditServerBuild(newServer ServerChange, serverid int) 
 func (config *CrocConfig) EditServerStartup(newServer ServerChange, serverid int) (Server, error) {
 	var serverDetails Server
 
-	esbytes, err := json.Marshal(newServer)
+	editServerBytes, err := json.Marshal(newServer)
 	if err != nil {
 		return serverDetails, err
 	}
 
 	// get json bytes from the panel.
-	sbytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/startup", "patch", esbytes)
+	serverBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/startup", "patch", editServerBytes)
 	if err != nil {
 		return serverDetails, err
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(sbytes, &serverDetails)
+	err = json.Unmarshal(serverBytes, &serverDetails)
 	if err != nil {
 		return serverDetails, err
 	}
