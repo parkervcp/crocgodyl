@@ -47,13 +47,13 @@ func (config *CrocConfig) GetUsers() (Users, error) {
 	var users Users
 
 	// get json bytes from the panel.
-	ubytes, err := config.queryPanelAPI("users", "get", nil)
+	userBytes, err := config.queryPanelAPI("users", "get", nil)
 	if err != nil {
 		return users, err
 	}
 
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(ubytes, &users)
+	err = json.Unmarshal(userBytes, &users)
 	if err != nil {
 		return users, err
 	}
@@ -67,13 +67,13 @@ func (config *CrocConfig) GetUser(userID int) (User, error) {
 	endpoint := fmt.Sprintf("users/%d", userID)
 
 	// get json bytes from the panel.
-	ubytes, err := config.queryPanelAPI(endpoint, "get", nil)
+	userBytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return user, err
 	}
 
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(ubytes, &user)
+	err = json.Unmarshal(userBytes, &user)
 	if err != nil {
 		return user, err
 	}
@@ -88,13 +88,13 @@ func (config *CrocConfig) GetUserByExternal(externalID string) (User, error) {
 	endpoint := fmt.Sprintf("users/%s", externalID)
 
 	// get json bytes from the panel.
-	ubytes, err := config.queryPanelAPI(endpoint, "get", nil)
+	userBytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return user, err
 	}
 
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(ubytes, &user)
+	err = json.Unmarshal(userBytes, &user)
 	if err != nil {
 		return user, err
 	}
@@ -109,13 +109,13 @@ func (config *CrocConfig) GetUserByPage(pageID int) (User, error) {
 	endpoint := fmt.Sprintf("users/%d", pageID)
 
 	// get json bytes from the panel.
-	ubytes, err := config.queryPanelAPI(endpoint, "get", nil)
+	userBytes, err := config.queryPanelAPI(endpoint, "get", nil)
 	if err != nil {
 		return user, err
 	}
 
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(ubytes, &user)
+	err = json.Unmarshal(userBytes, &user)
 	if err != nil {
 		return user, err
 	}
@@ -127,20 +127,20 @@ func (config *CrocConfig) GetUserByPage(pageID int) (User, error) {
 func (config *CrocConfig) CreateUser(newUser UserAttributes) (User, error) {
 	var userDetails User
 
-	nubytes, err := json.Marshal(newUser)
+	newUserBytes, err := json.Marshal(newUser)
 	if err != nil {
 		return userDetails, err
 	}
 
 	// get json bytes from the panel.
-	ubytes, err := config.queryPanelAPI("users", "post", nubytes)
+	userBytes, err := config.queryPanelAPI("users", "post", newUserBytes)
 	if err != nil {
 		return userDetails, err
 	}
 
 	// Get user info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(ubytes, &userDetails)
+	err = json.Unmarshal(userBytes, &userDetails)
 	if err != nil {
 		return userDetails, err
 	}
@@ -155,20 +155,20 @@ func (config *CrocConfig) EditUser(editUser UserAttributes, userID int) (User, e
 	var userDetails User
 	endpoint := fmt.Sprintf("users/%d", userID)
 
-	eubytes, err := json.Marshal(editUser)
+	editUserBytes, err := json.Marshal(editUser)
 	if err != nil {
 		return userDetails, err
 	}
 
 	// get json bytes from the panel.
-	ubytes, err := config.queryPanelAPI(endpoint, "patch", eubytes)
+	userBytes, err := config.queryPanelAPI(endpoint, "patch", editUserBytes)
 	if err != nil {
 		return userDetails, err
 	}
 
 	// Get user info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(ubytes, &userDetails)
+	err = json.Unmarshal(userBytes, &userDetails)
 	if err != nil {
 		return userDetails, err
 	}

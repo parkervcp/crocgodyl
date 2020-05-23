@@ -97,13 +97,13 @@ func (config *CrocConfig) GetNests() (Nests, error) {
 	var nests Nests
 
 	// get json bytes from the panel.
-	nbytes, err := config.queryPanelAPI("nests", "get", nil)
+	nestBytes, err := config.queryPanelAPI("nests", "get", nil)
 	if err != nil {
 		return nests, err
 	}
 
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(nbytes, &nests)
+	err = json.Unmarshal(nestBytes, &nests)
 	if err != nil {
 		return nests, err
 	}
