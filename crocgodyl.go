@@ -65,7 +65,9 @@ type CrocConfig struct {
 // NewCrocConfig sets up the API interface with
 func NewCrocConfig(panelURL string, clientToken string, appToken string) (config *CrocConfig, err error) {
 
-	if panelURL == "" && clientToken == "" && appToken == "" {
+	config = &CrocConfig{}
+
+	if panelURL == "" && clientToken == "" && appToken 	== "" {
 		return config, errors.New("you need to configure the panel and at least one api token")
 	}
 
