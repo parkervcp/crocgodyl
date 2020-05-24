@@ -2,6 +2,7 @@ package crocgodyl
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -40,10 +41,29 @@ type Pagination struct {
 	Links       Links `json:"links"`
 }
 
-// Links is the struct for the links in the Pagination struct
 type Links struct {
-	Previous string `json:"previous,omitempty"`
-	Next     string `json:"next,omitempty"`
+	Next     string `json:"next"`
+	Previous string `json:"previous"`
+}
+
+func (l *Links) UnmarshalJSON(b []byte) error {
+	if bytes.Equal(b, []byte("[]")) {
+		return nil
+	}
+
+	// Avoid recursive UnmarshalJSON calls.
+	var links struct {
+		Next     string `json:"next"`
+		Previous string `json:"previous"`
+	}
+
+	if err := json.Unmarshal(b, &links); err != nil {
+		return err
+	}
+
+	l.Next = links.Next
+	l.Previous = links.Previous
+	return nil
 }
 
 //

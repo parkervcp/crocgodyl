@@ -11,16 +11,7 @@ import (
 type Nests struct {
 	Object string `json:"object"`
 	Nest   []Nest `json:"data"`
-	Meta   struct {
-		Pagination struct {
-			Total       int           `json:"total"`
-			Count       int           `json:"count"`
-			PerPage     int           `json:"per_page"`
-			CurrentPage int           `json:"current_page"`
-			TotalPages  int           `json:"total_pages"`
-			Links       []interface{} `json:"links"`
-		} `json:"pagination"`
-	} `json:"meta"`
+	Meta   Meta   `json:"meta"`
 }
 
 // Nest is the struct for a nest on the panel.
