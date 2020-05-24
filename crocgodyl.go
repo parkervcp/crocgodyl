@@ -37,6 +37,13 @@ type Pagination struct {
 	PerPage     int     `json:"per_page,omitempty"`
 	CurrentPage int     `json:"current_page,omitempty"`
 	TotalPages  int     `json:"total_pages,omitempty"`
+	Links       []Links `json:"links"`
+}
+
+// Links is the struct for the links in the Pagination struct
+type Links struct {
+	Previous string `json:"previous,omitempty"`
+	Next     string `json:"next,omitempty"`
 }
 
 //
@@ -59,7 +66,7 @@ func NewCrocConfig(panelURL string, clientToken string, appToken string) (config
 
 	config = &CrocConfig{}
 
-	if panelURL == "" && clientToken == "" && appToken 	== "" {
+	if panelURL == "" && clientToken == "" && appToken == "" {
 		return config, errors.New("you need to configure the panel and at least one api token")
 	}
 
@@ -120,9 +127,6 @@ func (config *CrocConfig) queryPanelAPI(endpoint, request string, data []byte) (
 	if resp.Body != nil {
 		bodyBytes, _ = ioutil.ReadAll(resp.Body)
 	}
-
-	//set bodyBytes to the response body
-	resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	//Close response thread
 	defer resp.Body.Close()
