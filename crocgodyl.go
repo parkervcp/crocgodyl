@@ -2,6 +2,7 @@ package crocgodyl
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -32,11 +33,37 @@ type Meta struct {
 
 // Pagination is the information how many responses there on a page and how many pages there are.
 type Pagination struct {
-	Total       int     `json:"total,omitempty"`
-	Count       int     `json:"count,omitempty"`
-	PerPage     int     `json:"per_page,omitempty"`
-	CurrentPage int     `json:"current_page,omitempty"`
-	TotalPages  int     `json:"total_pages,omitempty"`
+	Total       int   `json:"total,omitempty"`
+	Count       int   `json:"count,omitempty"`
+	PerPage     int   `json:"per_page,omitempty"`
+	CurrentPage int   `json:"current_page,omitempty"`
+	TotalPages  int   `json:"total_pages,omitempty"`
+	Links       Links `json:"links"`
+}
+
+type Links struct {
+	Next     string `json:"next"`
+	Previous string `json:"previous"`
+}
+
+func (l *Links) UnmarshalJSON(b []byte) error {
+	if bytes.Equal(b, []byte("[]")) {
+		return nil
+	}
+
+	// Avoid recursive UnmarshalJSON calls.
+	var links struct {
+		Next     string `json:"next"`
+		Previous string `json:"previous"`
+	}
+
+	if err := json.Unmarshal(b, &links); err != nil {
+		return err
+	}
+
+	l.Next = links.Next
+	l.Previous = links.Previous
+	return nil
 }
 
 //
@@ -59,7 +86,7 @@ func NewCrocConfig(panelURL string, clientToken string, appToken string) (config
 
 	config = &CrocConfig{}
 
-	if panelURL == "" && clientToken == "" && appToken 	== "" {
+	if panelURL == "" && clientToken == "" && appToken == "" {
 		return config, errors.New("you need to configure the panel and at least one api token")
 	}
 
@@ -120,9 +147,6 @@ func (config *CrocConfig) queryPanelAPI(endpoint, request string, data []byte) (
 	if resp.Body != nil {
 		bodyBytes, _ = ioutil.ReadAll(resp.Body)
 	}
-
-	//set bodyBytes to the response body
-	resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	//Close response thread
 	defer resp.Body.Close()
