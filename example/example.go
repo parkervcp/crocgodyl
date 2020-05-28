@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -40,16 +39,18 @@ func init() {
 }
 
 func main() {
-	panel, err := croc.NewCrocConfig(Config.PanelURL, Config.ClientToken, Config.APIToken)
+	panel, err := croc.NewApplication(Config.PanelURL, Config.APIToken)
 	if err != nil {
-		fmt.Printf("%v\n", err)
-		return
+		log.Fatal(err)
+	} else {
+		log.Println("panel connection successful")
 	}
 
 	// validate the server is up and available
-	if _, err = panel.GetUsers(); err != nil {
-		fmt.Println(err)
-		return
+	if users, err := panel.GetUsers(); err != nil {
+		log.Fatal(err)
+	} else {
+		log.Println(users.User[0].Attributes.Username)
 	}
 
 	/*
