@@ -63,7 +63,7 @@ func (config *CrocConfig) GetLocation(locationID int) (Location, error) {
 	var location Location
 	endpoint := fmt.Sprintf("locations/%d", locationID)
 
-	locBytes, err := config.queryPanelAPI(endpoint, "get", nil)
+	locBytes, err := config.queryApplicationAPI(endpoint, "get", nil)
 	if err != nil {
 		return location, err
 	}
@@ -83,7 +83,7 @@ func (config *CrocConfig) GetLocationByPage(pageID int) (Locations, error) {
 	var locations Locations
 	endpoint := fmt.Sprintf("locations?page=%d", pageID)
 
-	locBytes, err := config.queryPanelAPI(endpoint, "get", nil)
+	locBytes, err := config.queryApplicationAPI(endpoint, "get", nil)
 	if err != nil {
 		return locations, err
 	}
@@ -108,7 +108,7 @@ func (config *CrocConfig) CreateLocation(newLocation LocationAttributes) (Locati
 	}
 
 	// get json bytes from the panel.
-	locBytes, err := config.queryPanelAPI("locations/", "post", newLocBytes)
+	locBytes, err := config.queryApplicationAPI("locations/", "post", newLocBytes)
 	if err != nil {
 		return locationDetails, err
 	}
@@ -134,7 +134,7 @@ func (config *CrocConfig) EditLocation(editLocation LocationAttributes, location
 	}
 
 	// get json bytes from the panel.
-	locBytes, err := config.queryPanelAPI(endpoint, "patch", editLocBytes)
+	locBytes, err := config.queryApplicationAPI(endpoint, "patch", editLocBytes)
 	if err != nil {
 		return locationDetails, err
 	}
@@ -155,7 +155,7 @@ func (config *CrocConfig) DeleteLocation(locationID int) error {
 	endpoint := fmt.Sprintf("locations/%d", locationID)
 
 	// get json bytes from the panel.
-	_, err := config.queryPanelAPI(endpoint, "delete", nil)
+	_, err := config.queryApplicationAPI(endpoint, "delete", nil)
 	if err != nil {
 		return err
 	}

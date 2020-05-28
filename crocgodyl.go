@@ -61,11 +61,11 @@ type CrocConfig struct {
 //
 
 // NewCrocConfig sets up the API interface with
-func NewCrocConfig(panelURL string, clientToken string, appToken string) (config *CrocConfig, err error) {
+func NewApplication(panelURL string, appToken string) (config *CrocConfig, err error) {
 
 	config = &CrocConfig{}
 
-	if panelURL == "" && clientToken == "" && appToken == "" {
+	if panelURL == "" && appToken == "" {
 		return config, errors.New("you need to configure the panel and at least one api token")
 	}
 
@@ -73,12 +73,11 @@ func NewCrocConfig(panelURL string, clientToken string, appToken string) (config
 		return config, errors.New("a panel URL is required to use the API")
 	}
 
-	if clientToken == "" && appToken == "" {
-		return config, errors.New("at least one api token is required")
+	if appToken == "" {
+		return config, errors.New("an application token is required")
 	}
 
 	config.PanelURL = panelURL
-	config.ClientToken = clientToken
 	config.AppToken = appToken
 
 	// validate the server is up and available
@@ -89,7 +88,7 @@ func NewCrocConfig(panelURL string, clientToken string, appToken string) (config
 	return
 }
 
-func (config *CrocConfig) queryPanelAPI(endpoint, request string, data []byte) (bodyBytes []byte, err error) {
+func (config *CrocConfig) queryApplicationAPI(endpoint, request string, data []byte) (bodyBytes []byte, err error) {
 	//http get json request
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", config.PanelURL+"/api/application/"+endpoint, nil)
