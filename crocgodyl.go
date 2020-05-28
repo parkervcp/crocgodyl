@@ -2,7 +2,6 @@ package crocgodyl
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -44,26 +43,6 @@ type Pagination struct {
 type Links struct {
 	Next     string `json:"next"`
 	Previous string `json:"previous"`
-}
-
-func (l *Links) UnmarshalJSON(b []byte) error {
-	if bytes.Equal(b, []byte("[]")) {
-		return nil
-	}
-
-	// Avoid recursive UnmarshalJSON calls.
-	var links struct {
-		Next     string `json:"next"`
-		Previous string `json:"previous"`
-	}
-
-	if err := json.Unmarshal(b, &links); err != nil {
-		return err
-	}
-
-	l.Next = links.Next
-	l.Previous = links.Previous
-	return nil
 }
 
 //
@@ -110,9 +89,7 @@ func NewCrocConfig(panelURL string, clientToken string, appToken string) (config
 	return
 }
 
-func (config *CrocConfig) queryPanelAPI(endpoint, request string, data []byte) ([]byte, error) {
-	//var for response body byte
-	var bodyBytes []byte
+func (config *CrocConfig) queryPanelAPI(endpoint, request string, data []byte) (bodyBytes []byte, err error) {
 	//http get json request
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", config.PanelURL+"/api/application/"+endpoint, nil)
@@ -151,6 +128,8 @@ func (config *CrocConfig) queryPanelAPI(endpoint, request string, data []byte) (
 	//Close response thread
 	defer resp.Body.Close()
 
+	bodyBytes = bytes.Replace(bodyBytes, []byte("[]"), []byte("{}"), -1)
+
 	//return byte structure
-	return bodyBytes, nil
+	return
 }
