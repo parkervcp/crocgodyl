@@ -94,7 +94,6 @@ func (config *CrocConfig) queryApplicationAPI(endpoint, request string, data []b
 	req, _ := http.NewRequest("GET", config.PanelURL+"/api/application/"+endpoint, nil)
 
 	switch {
-	case request == "get":
 	case request == "post":
 		req, _ = http.NewRequest("POST", config.PanelURL+"/api/application/"+endpoint, bytes.NewBuffer(data))
 	case request == "patch":
@@ -112,12 +111,13 @@ func (config *CrocConfig) queryApplicationAPI(endpoint, request string, data []b
 	//send request
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 202 && resp.StatusCode != 204 {
 		bodyBytes, _ = ioutil.ReadAll(resp.Body)
-		return bodyBytes, errors.New(string(bodyBytes))
+		err = errors.New(string(bodyBytes))
+		return
 	}
 
 	if resp.Body != nil {

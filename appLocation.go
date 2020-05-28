@@ -8,9 +8,9 @@ import (
 
 // Application Location API
 
-// Locations is the struct for all the nodes added to the panel.
+// AppLocations is the struct for all the nodes added to the panel.
 // GET this from the '/api/application/locations` endpoint
-type Locations struct {
+type AppLocations struct {
 	Object    string     `json:"object,omitempty"`
 	Locations []Location `json:"data,omitempty"`
 	Meta      Meta       `json:"meta,omitempty"`
@@ -34,33 +34,55 @@ type LocationAttributes struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
-// GetLocations returns all available nodes.
-// Depending on how man locations you have this may take a while.
-func (config *CrocConfig) GetLocations() (Locations, error) {
-	var locations Locations
-	var locationsAll Locations
+// GetLocationByPage returns all available locations by page.
+func (config *CrocConfig) getLocationsByPage(pageID int) (locations AppLocations, err error) {
+	endpoint := fmt.Sprintf("locations?page=%d", pageID)
 
-	pages, err := config.GetLocationByPage(1)
+	// Get location info from the panel
+	locBytes, err := config.queryApplicationAPI(endpoint, "get", nil)
 	if err != nil {
-		return locations, err
+		return
 	}
 
-	for i := 1; i >= pages.Meta.Pagination.TotalPages; i++ {
-		locations, err := config.GetLocationByPage(i)
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(locBytes, &locations)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+// GetLocations returns all available nodes.
+// Depending on how man locations you have this may take a while.
+func (config *CrocConfig) GetLocations() (locations AppLocations, err error) {
+	// Get location info from the panel
+	locBytes, err := config.queryApplicationAPI("locations", "get", nil)
+	if err != nil {
+		return
+	}
+
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(locBytes, &locations)
+	if err != nil {
+		return
+	}
+
+	for i := 1; i >= locations.Meta.Pagination.TotalPages; i++ {
+		pageLocations, err := config.getLocationsByPage(i)
 		if err != nil {
 			return locations, err
 		}
-		for _, location := range locations.Locations {
-			locationsAll.Locations = append(locationsAll.Locations, location)
+		for _, location := range pageLocations.Locations {
+			locations.Locations = append(locations.Locations, location)
 		}
 	}
 
-	return locationsAll, nil
+	return
 }
 
 // GetLocation returns a single location by locationID.
-func (config *CrocConfig) GetLocation(locationID int) (Location, error) {
-	var location Location
+func (config *CrocConfig) GetLocation(locationID int) (location Location, err error) {
 	endpoint := fmt.Sprintf("locations/%d", locationID)
 
 	locBytes, err := config.queryApplicationAPI(endpoint, "get", nil)
@@ -78,84 +100,61 @@ func (config *CrocConfig) GetLocation(locationID int) (Location, error) {
 	return location, nil
 }
 
-// GetLocationByPage returns all available locations by page.
-func (config *CrocConfig) GetLocationByPage(pageID int) (Locations, error) {
-	var locations Locations
-	endpoint := fmt.Sprintf("locations?page=%d", pageID)
-
-	locBytes, err := config.queryApplicationAPI(endpoint, "get", nil)
-	if err != nil {
-		return locations, err
-	}
-
-	// Get node info from the panel
-	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(locBytes, &locations)
-	if err != nil {
-		return locations, err
-	}
-
-	return locations, nil
-}
-
 // CreateLocation creates a user.
-func (config *CrocConfig) CreateLocation(newLocation LocationAttributes) (Location, error) {
-	var locationDetails Location
-
+func (config *CrocConfig) CreateLocation(newLocation LocationAttributes) (location Location, err error) {
 	newLocBytes, err := json.Marshal(newLocation)
 	if err != nil {
-		return locationDetails, err
+		return location, err
 	}
 
 	// get json bytes from the panel.
 	locBytes, err := config.queryApplicationAPI("locations/", "post", newLocBytes)
 	if err != nil {
-		return locationDetails, err
+		return location, err
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(locBytes, &locationDetails)
+	err = json.Unmarshal(locBytes, &location)
 	if err != nil {
-		return locationDetails, err
+		return
 	}
 
-	return locationDetails, nil
+	return
 }
 
 // EditLocation creates a user.
-func (config *CrocConfig) EditLocation(editLocation LocationAttributes, locationID int) (Location, error) {
-	var locationDetails Location
+func (config *CrocConfig) EditLocation(editLocation LocationAttributes, locationID int) (location Location, err error) {
 	endpoint := fmt.Sprintf("locations/%d", locationID)
 
 	editLocBytes, err := json.Marshal(editLocation)
 	if err != nil {
-		return locationDetails, err
+		return location, err
 	}
 
 	// get json bytes from the panel.
 	locBytes, err := config.queryApplicationAPI(endpoint, "patch", editLocBytes)
 	if err != nil {
-		return locationDetails, err
+		return location, err
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(locBytes, &locationDetails)
+	err = json.Unmarshal(locBytes, &location)
 	if err != nil {
-		return locationDetails, err
+		return
 	}
 
-	return locationDetails, nil
+	return
 }
 
 // DeleteLocation deletes a location.
 // It only requires a locationID as an int
-func (config *CrocConfig) DeleteLocation(locationID int) error {
+func (config *CrocConfig) DeleteLocation(locationID int) (err error) {
 	endpoint := fmt.Sprintf("locations/%d", locationID)
 
 	// get json bytes from the panel.
-	_, err := config.queryApplicationAPI(endpoint, "delete", nil)
+	_, err = config.queryApplicationAPI(endpoint, "delete", nil)
 	if err != nil {
 		return err
 	}

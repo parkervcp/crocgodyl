@@ -3,7 +3,7 @@ package crocgodyl
 // --------------------------------------------------------------
 // Client API
 
-// Client Server API
+// Client Servers API
 
 // ClientServers is the default all servers view for the client API.
 // GET this from the '/api/client' endpoint
