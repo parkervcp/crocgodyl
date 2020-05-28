@@ -47,7 +47,7 @@ func (config *CrocConfig) GetUsers() (Users, error) {
 	var users Users
 
 	// get json bytes from the panel.
-	userBytes, err := config.queryPanelAPI("users", "get", nil)
+	userBytes, err := config.queryApplicationAPI("users", "get", nil)
 	if err != nil {
 		return users, err
 	}
@@ -67,7 +67,7 @@ func (config *CrocConfig) GetUser(userID int) (User, error) {
 	endpoint := fmt.Sprintf("users/%d", userID)
 
 	// get json bytes from the panel.
-	userBytes, err := config.queryPanelAPI(endpoint, "get", nil)
+	userBytes, err := config.queryApplicationAPI(endpoint, "get", nil)
 	if err != nil {
 		return user, err
 	}
@@ -88,7 +88,7 @@ func (config *CrocConfig) GetUserByExternal(externalID string) (User, error) {
 	endpoint := fmt.Sprintf("users/%s", externalID)
 
 	// get json bytes from the panel.
-	userBytes, err := config.queryPanelAPI(endpoint, "get", nil)
+	userBytes, err := config.queryApplicationAPI(endpoint, "get", nil)
 	if err != nil {
 		return user, err
 	}
@@ -109,7 +109,7 @@ func (config *CrocConfig) GetUserByPage(pageID int) (User, error) {
 	endpoint := fmt.Sprintf("users/%d", pageID)
 
 	// get json bytes from the panel.
-	userBytes, err := config.queryPanelAPI(endpoint, "get", nil)
+	userBytes, err := config.queryApplicationAPI(endpoint, "get", nil)
 	if err != nil {
 		return user, err
 	}
@@ -133,7 +133,7 @@ func (config *CrocConfig) CreateUser(newUser UserAttributes) (User, error) {
 	}
 
 	// get json bytes from the panel.
-	userBytes, err := config.queryPanelAPI("users", "post", newUserBytes)
+	userBytes, err := config.queryApplicationAPI("users", "post", newUserBytes)
 	if err != nil {
 		return userDetails, err
 	}
@@ -161,7 +161,7 @@ func (config *CrocConfig) EditUser(editUser UserAttributes, userID int) (User, e
 	}
 
 	// get json bytes from the panel.
-	userBytes, err := config.queryPanelAPI(endpoint, "patch", editUserBytes)
+	userBytes, err := config.queryApplicationAPI(endpoint, "patch", editUserBytes)
 	if err != nil {
 		return userDetails, err
 	}
@@ -182,7 +182,7 @@ func (config *CrocConfig) DeleteUser(userID int) error {
 	endpoint := fmt.Sprintf("users/%d", userID)
 
 	// get json bytes from the panel.
-	_, err := config.queryPanelAPI(endpoint, "delete", nil)
+	_, err := config.queryApplicationAPI(endpoint, "delete", nil)
 	if err != nil {
 		return err
 	}

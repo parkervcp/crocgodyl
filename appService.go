@@ -153,7 +153,7 @@ func (e *EggVariables) UnmarshalJSON(b []byte) error {
 // GetNests returns all available nodes.
 func (config *CrocConfig) GetNests() (nests Nests, err error) {
 	// get json bytes from the panel.
-	nestBytes, err := config.queryPanelAPI("nests", "get", nil)
+	nestBytes, err := config.queryApplicationAPI("nests", "get", nil)
 	if err != nil {
 		return nests, err
 	}
@@ -170,7 +170,7 @@ func (config *CrocConfig) GetNests() (nests Nests, err error) {
 // GetEggs returns all available nodes.
 func (config *CrocConfig) GetNestEggs(nestID int) (eggs NestEggs, err error) {
 	// get json bytes from the panel.
-	nestEggsBytes, err := config.queryPanelAPI(fmt.Sprintf("nests/%d/eggs", nestID), "get", nil)
+	nestEggsBytes, err := config.queryApplicationAPI(fmt.Sprintf("nests/%d/eggs", nestID), "get", nil)
 	if err != nil {
 		return eggs, err
 	}
@@ -187,7 +187,7 @@ func (config *CrocConfig) GetNestEggs(nestID int) (eggs NestEggs, err error) {
 // GetEggs returns all available nodes.
 func (config *CrocConfig) GetEgg(nestID, eggID int) (egg Egg, err error) {
 	// get json bytes from the panel.
-	eggBytes, err := config.queryPanelAPI(fmt.Sprintf("nests/%d/eggs/%d?include=variables", nestID, eggID), "get", nil)
+	eggBytes, err := config.queryApplicationAPI(fmt.Sprintf("nests/%d/eggs/%d?include=variables", nestID, eggID), "get", nil)
 	if err != nil {
 		return egg, err
 	}

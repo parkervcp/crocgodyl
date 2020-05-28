@@ -126,7 +126,7 @@ func (config *CrocConfig) GetServers() (Servers, error) {
 	var servers Servers
 
 	// get json bytes from the panel.
-	serverBytes, err := config.queryPanelAPI("servers", "get", nil)
+	serverBytes, err := config.queryApplicationAPI("servers", "get", nil)
 	if err != nil {
 		return servers, err
 	}
@@ -146,7 +146,7 @@ func (config *CrocConfig) GetServer(serverid int) (Server, error) {
 	var server Server
 
 	// get json bytes from the panel.
-	serverBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
+	serverBytes, err := config.queryApplicationAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
 	if err != nil {
 		return server, err
 	}
@@ -166,7 +166,7 @@ func (config *CrocConfig) GetServerAllocations(serverid int) ([]int, error) {
 	var allServerAlloc []int
 
 	// get json bytes from the panel.
-	serverAllocBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
+	serverAllocBytes, err := config.queryApplicationAPI("servers/"+strconv.Itoa(serverid)+"?include=allocations", "get", nil)
 	if err != nil {
 		return allServerAlloc, err
 	}
@@ -192,7 +192,7 @@ func (config *CrocConfig) CreateServer(newServer ServerChange) (Server, error) {
 	}
 
 	// get json bytes from the panel.
-	serverBytes, err := config.queryPanelAPI("servers", "post", newServerBytes)
+	serverBytes, err := config.queryApplicationAPI("servers", "post", newServerBytes)
 	if err != nil {
 		return serverDetails, err
 	}
@@ -218,7 +218,7 @@ func (config *CrocConfig) EditServerDetails(newServer ServerChange, serverid int
 	}
 
 	// get json bytes from the panel.
-	serverBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/details", "patch", editServerBytes)
+	serverBytes, err := config.queryApplicationAPI("servers/"+strconv.Itoa(serverid)+"/details", "patch", editServerBytes)
 	if err != nil {
 		return serverDetails, err
 	}
@@ -244,7 +244,7 @@ func (config *CrocConfig) EditServerBuild(newServer ServerChange, serverid int) 
 	}
 
 	// get json bytes from the panel.
-	serverBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/build", "patch", editServerBytes)
+	serverBytes, err := config.queryApplicationAPI("servers/"+strconv.Itoa(serverid)+"/build", "patch", editServerBytes)
 	if err != nil {
 		return serverDetails, err
 	}
@@ -270,7 +270,7 @@ func (config *CrocConfig) EditServerStartup(newServer ServerChange, serverid int
 	}
 
 	// get json bytes from the panel.
-	serverBytes, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid)+"/startup", "patch", editServerBytes)
+	serverBytes, err := config.queryApplicationAPI("servers/"+strconv.Itoa(serverid)+"/startup", "patch", editServerBytes)
 	if err != nil {
 		return serverDetails, err
 	}
@@ -289,7 +289,7 @@ func (config *CrocConfig) EditServerStartup(newServer ServerChange, serverid int
 // It only requires a server id as a string
 func (config *CrocConfig) DeleteServer(serverid int) error {
 	// get json bytes from the panel.
-	_, err := config.queryPanelAPI("servers/"+strconv.Itoa(serverid), "delete", nil)
+	_, err := config.queryApplicationAPI("servers/"+strconv.Itoa(serverid), "delete", nil)
 	if err != nil {
 		return err
 	}
