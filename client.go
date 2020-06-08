@@ -1,72 +1,56 @@
 package crocgodyl
 
+import (
+	"bytes"
+	"errors"
+	"io/ioutil"
+	"net/http"
+)
+
 // --------------------------------------------------------------
 // Client API
 
-// Client Servers API
+func (config *ClientConfig) queryClientAPI(endpoint, request string, data []byte) (bodyBytes []byte, err error) {
+	//http get json request
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", config.PanelURL+"/api/client/"+endpoint, nil)
 
-// ClientServers is the default all servers view for the client API.
-// GET this from the '/api/client' endpoint
-type ClientServers struct {
-	Object       string         `json:"object"`
-	ClientServer []ClientServer `json:"data"`
-	Meta         Meta           `json:"meta"`
-}
+	switch {
+	case request == "post":
+		req, _ = http.NewRequest("POST", config.PanelURL+"/api/client/"+endpoint, bytes.NewBuffer(data))
+	case request == "patch":
+		req, _ = http.NewRequest("PATCH", config.PanelURL+"/api/client/"+endpoint, bytes.NewBuffer(data))
+	case request == "delete":
+		req, _ = http.NewRequest("DELETE", config.PanelURL+"/api/client/"+endpoint, nil)
+	default:
+	}
 
-// ClientServer is the server object view returning single server information.
-// GET this from the '/api/client/servers/<server_ID>' endpoint
-type ClientServer struct {
-	Object     string `json:"object"`
-	Attributes struct {
-		ServerOwner bool   `json:"server_owner"`
-		Identifier  string `json:"identifier"`
-		UUID        string `json:"uuid"`
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		Limits      struct {
-			Memory int `json:"memory"`
-			Swap   int `json:"swap"`
-			Disk   int `json:"disk"`
-			Io     int `json:"io"`
-			CPU    int `json:"cpu"`
-		} `json:"limits"`
-		FeatureLimits struct {
-			Databases   int `json:"databases"`
-			Allocations int `json:"allocations"`
-		} `json:"feature_limits"`
-	} `json:"attributes"`
-}
+	//Sets request header for the http request
+	req.Header.Add("Authorization", "Bearer "+config.ClientToken)
+	req.Header.Add("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 
-// ClientServerUtilization is the server statistics reported by the daemon.
-// GET this from the '/api/client/servers/<server_ID>/utilization' endpoint
-type ClientServerUtilization struct {
-	Object     string `json:"object"`
-	Attributes struct {
-		State  string `json:"state"`
-		Memory struct {
-			Current int `json:"current"`
-			Limit   int `json:"limit"`
-		} `json:"memory"`
-		CPU struct {
-			Current float64   `json:"current"`
-			Cores   []float64 `json:"cores"`
-			Limit   int       `json:"limit"`
-		} `json:"cpu"`
-		Disk struct {
-			Current int `json:"current"`
-			Limit   int `json:"limit"`
-		} `json:"disk"`
-	} `json:"attributes"`
-}
+	//send request
+	resp, err := client.Do(req)
+	if err != nil {
+		return
+	}
 
-// ClientServerConsoleCommand is the struct for sending a command for the server console
-// GET this from the '/api/client/servers/<server_ID>/command' endpoint
-type ClientServerConsoleCommand struct {
-	Command string `json:"command"`
-}
+	if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 202 && resp.StatusCode != 204 {
+		bodyBytes, _ = ioutil.ReadAll(resp.Body)
+		err = errors.New(string(bodyBytes))
+		return
+	}
 
-// ClientServerPowerAction is the struct for sending a power command for the server
-// GET this from the '/api/client/servers/<server_ID>/power' endpoint
-type ClientServerPowerAction struct {
-	Signal string `json:"signal"`
+	if resp.Body != nil {
+		bodyBytes, _ = ioutil.ReadAll(resp.Body)
+	}
+
+	//Close response thread
+	defer resp.Body.Close()
+
+	bodyBytes = bytes.Replace(bodyBytes, []byte("[]"), []byte("{}"), -1)
+
+	//return byte structure
+	return
 }
