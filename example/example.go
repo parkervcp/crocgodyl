@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -39,7 +40,12 @@ func init() {
 }
 
 func main() {
-	panel, err := croc.NewApplication(Config.PanelURL, Config.APIToken)
+	application()
+	client()
+}
+
+func application() {
+	panel, err := croc.NewAppClient(Config.PanelURL, Config.APIToken)
 	if err != nil {
 		log.Fatal(err)
 	} else {
@@ -436,4 +442,34 @@ func main() {
 			log.Println("Servers deleted succesfully.")
 		}
 	*/
+}
+
+func client() {
+	client, err := croc.NewClientClient(Config.PanelURL, Config.ClientToken)
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		log.Println("panel connection successful")
+	}
+
+	if servers, err := client.GetClientServers(); err != nil {
+		log.Fatal(err)
+	} else {
+		fmt.Println(servers.ClientServers[0].Attributes.Name)
+		fmt.Println(servers.ClientServers[0].Attributes.Identifier)
+	}
+
+	serverCommand := croc.ClientServerConsoleCommand{"say hello"}
+
+	if err := client.SendServerCommand("2186b506", serverCommand); err != nil {
+		log.Fatal(err)
+	} else {
+		fmt.Println("server command sent")
+	}
+
+	if err := client.SendServerPowerSignal("2186b506", "restart"); err != nil {
+		log.Fatal(err)
+	} else {
+		fmt.Println("server restart signal sent")
+	}
 }
