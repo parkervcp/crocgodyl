@@ -151,7 +151,7 @@ func (e *EggVariables) UnmarshalJSON(b []byte) error {
 }
 
 // GetLocationByPage returns all available locations by page.
-func (config *CrocConfig) getNestsByPage(pageID int) (nests AppNests, err error) {
+func (config *AppConfig) getNestsByPage(pageID int) (nests AppNests, err error) {
 	// get json bytes from the panel.
 	nestBytes, err := config.queryApplicationAPI(fmt.Sprintf("nests?page=%d", pageID), "get", nil)
 	if err != nil {
@@ -167,7 +167,7 @@ func (config *CrocConfig) getNestsByPage(pageID int) (nests AppNests, err error)
 }
 
 // GetNests returns all available nodes.
-func (config *CrocConfig) GetNests() (nests AppNests, err error) {
+func (config *AppConfig) GetNests() (nests AppNests, err error) {
 	// get json bytes from the panel.
 	nestBytes, err := config.queryApplicationAPI("nests", "get", nil)
 	if err != nil {
@@ -180,13 +180,15 @@ func (config *CrocConfig) GetNests() (nests AppNests, err error) {
 		return
 	}
 
-	for i := 1; i >= nests.Meta.Pagination.TotalPages; i++ {
-		pageNests, err := config.getNestsByPage(i)
-		if err != nil {
-			return nests, err
-		}
-		for _, nest := range pageNests.Nests {
-			nests.Nests = append(nests.Nests, nest)
+	if nests.Meta.Pagination.TotalPages > 1 {
+		for i := 1; i >= nests.Meta.Pagination.TotalPages; i++ {
+			pageNests, err := config.getNestsByPage(i)
+			if err != nil {
+				return nests, err
+			}
+			for _, nest := range pageNests.Nests {
+				nests.Nests = append(nests.Nests, nest)
+			}
 		}
 	}
 
@@ -194,7 +196,7 @@ func (config *CrocConfig) GetNests() (nests AppNests, err error) {
 }
 
 // GetNests returns all available nodes.
-func (config *CrocConfig) GetNest(nestID int) (nest Nest, err error) {
+func (config *AppConfig) GetNest(nestID int) (nest Nest, err error) {
 	// get json bytes from the panel.
 	nestBytes, err := config.queryApplicationAPI(fmt.Sprintf("nests/%d", nestID), "get", nil)
 	if err != nil {
@@ -211,7 +213,7 @@ func (config *CrocConfig) GetNest(nestID int) (nest Nest, err error) {
 }
 
 // GetEggs returns all available nodes.
-func (config *CrocConfig) GetNestEggs(nestID int) (eggs NestEggs, err error) {
+func (config *AppConfig) GetNestEggs(nestID int) (eggs NestEggs, err error) {
 	// get json bytes from the panel.
 	nestEggsBytes, err := config.queryApplicationAPI(fmt.Sprintf("nests/%d/eggs", nestID), "get", nil)
 	if err != nil {
@@ -228,7 +230,7 @@ func (config *CrocConfig) GetNestEggs(nestID int) (eggs NestEggs, err error) {
 }
 
 // GetEggs returns all available nodes.
-func (config *CrocConfig) GetEgg(nestID, eggID int) (egg Egg, err error) {
+func (config *AppConfig) GetEgg(nestID, eggID int) (egg Egg, err error) {
 	// get json bytes from the panel.
 	eggBytes, err := config.queryApplicationAPI(fmt.Sprintf("nests/%d/eggs/%d?include=variables", nestID, eggID), "get", nil)
 	if err != nil {

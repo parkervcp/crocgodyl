@@ -44,7 +44,7 @@ type UserAttributes struct {
 
 // GetUserByPage returns Information on users by their page number.
 // The externalID is a string as that is what the panel requires.
-func (config *CrocConfig) getUserByPage(pageID int) (users AppUsers, err error) {
+func (config *AppConfig) getUserByPage(pageID int) (users AppUsers, err error) {
 	// get json bytes from the panel.
 	userBytes, err := config.queryApplicationAPI(fmt.Sprintf("users/%d", pageID), "get", nil)
 	if err != nil {
@@ -61,7 +61,7 @@ func (config *CrocConfig) getUserByPage(pageID int) (users AppUsers, err error) 
 }
 
 // GetUsers returns Information on all users.
-func (config *CrocConfig) GetUsers() (users AppUsers, err error) {
+func (config *AppConfig) GetUsers() (users AppUsers, err error) {
 	// Get location info from the panel
 	userBytes, err := config.queryApplicationAPI("users", "get", nil)
 	if err != nil {
@@ -74,13 +74,15 @@ func (config *CrocConfig) GetUsers() (users AppUsers, err error) {
 		return
 	}
 
-	for i := 1; i >= users.Meta.Pagination.TotalPages; i++ {
-		pageUsers, err := config.getUserByPage(i)
-		if err != nil {
-			return users, err
-		}
-		for _, user := range pageUsers.Users {
-			users.Users = append(users.Users, user)
+	if users.Meta.Pagination.TotalPages > 1 {
+		for i := 1; i >= users.Meta.Pagination.TotalPages; i++ {
+			pageUsers, err := config.getUserByPage(i)
+			if err != nil {
+				return users, err
+			}
+			for _, user := range pageUsers.Users {
+				users.Users = append(users.Users, user)
+			}
 		}
 	}
 
@@ -88,7 +90,7 @@ func (config *CrocConfig) GetUsers() (users AppUsers, err error) {
 }
 
 // GetUser returns Information on a single user.
-func (config *CrocConfig) GetUser(userID int) (user User, err error) {
+func (config *AppConfig) GetUser(userID int) (user User, err error) {
 	// get json bytes from the panel.
 	userBytes, err := config.queryApplicationAPI(fmt.Sprintf("users/%d", userID), "get", nil)
 	if err != nil {
@@ -106,7 +108,7 @@ func (config *CrocConfig) GetUser(userID int) (user User, err error) {
 
 // GetUserByExternal returns Information on a single user by their externalID.
 // The externalID is a string as that is what the panel requires.
-func (config *CrocConfig) GetUserByExternal(externalID string) (user User, err error) {
+func (config *AppConfig) GetUserByExternal(externalID string) (user User, err error) {
 	// get json bytes from the panel.
 	userBytes, err := config.queryApplicationAPI(fmt.Sprintf("users/%s", externalID), "get", nil)
 	if err != nil {
@@ -123,7 +125,7 @@ func (config *CrocConfig) GetUserByExternal(externalID string) (user User, err e
 }
 
 // CreateUser creates a user.
-func (config *CrocConfig) CreateUser(newUser UserAttributes) (user User, err error) {
+func (config *AppConfig) CreateUser(newUser UserAttributes) (user User, err error) {
 	newUserBytes, err := json.Marshal(newUser)
 	if err != nil {
 		return
@@ -148,7 +150,7 @@ func (config *CrocConfig) CreateUser(newUser UserAttributes) (user User, err err
 // EditUser creates a user.
 // Send a UserAttributes to the panel to update the user.
 // You cannot edit the id or created/updated fields for the user.
-func (config *CrocConfig) EditUser(editUser UserAttributes, userID int) (user User, err error) {
+func (config *AppConfig) EditUser(editUser UserAttributes, userID int) (user User, err error) {
 	editUserBytes, err := json.Marshal(editUser)
 	if err != nil {
 		return
@@ -172,7 +174,7 @@ func (config *CrocConfig) EditUser(editUser UserAttributes, userID int) (user Us
 
 // DeleteUser deletes a user.
 // It only requires a user id as a string
-func (config *CrocConfig) DeleteUser(userID int) (err error) {
+func (config *AppConfig) DeleteUser(userID int) (err error) {
 	// get json bytes from the panel.
 	_, err = config.queryApplicationAPI(fmt.Sprintf("users/%d", userID), "delete", nil)
 	if err != nil {

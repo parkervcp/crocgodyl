@@ -125,7 +125,7 @@ type SererAllocAttributes struct {
 }
 
 // getServersByPage returns all available locations by page.
-func (config *CrocConfig) getServersByPage(pageID int) (servers AppServers, err error) {
+func (config *AppConfig) getServersByPage(pageID int) (servers AppServers, err error) {
 	// Get location info from the panel
 	serverBytes, err := config.queryApplicationAPI(fmt.Sprintf("servers?page=%d", pageID), "get", nil)
 	if err != nil {
@@ -142,7 +142,7 @@ func (config *CrocConfig) getServersByPage(pageID int) (servers AppServers, err 
 }
 
 // GetServers returns all available servers.
-func (config *CrocConfig) GetServers() (servers AppServers, err error) {
+func (config *AppConfig) GetServers() (servers AppServers, err error) {
 	// Get server info from the panel
 	serverBytes, err := config.queryApplicationAPI("servers", "get", nil)
 	if err != nil {
@@ -155,13 +155,15 @@ func (config *CrocConfig) GetServers() (servers AppServers, err error) {
 		return
 	}
 
-	for i := 1; i >= servers.Meta.Pagination.TotalPages; i++ {
-		pageServers, err := config.getServersByPage(i)
-		if err != nil {
-			return servers, err
-		}
-		for _, server := range pageServers.Servers {
-			servers.Servers = append(servers.Servers, server)
+	if servers.Meta.Pagination.TotalPages > 1 {
+		for i := 1; i >= servers.Meta.Pagination.TotalPages; i++ {
+			pageServers, err := config.getServersByPage(i)
+			if err != nil {
+				return servers, err
+			}
+			for _, server := range pageServers.Servers {
+				servers.Servers = append(servers.Servers, server)
+			}
 		}
 	}
 
@@ -169,7 +171,7 @@ func (config *CrocConfig) GetServers() (servers AppServers, err error) {
 }
 
 // GetServer returns Information on a single server.
-func (config *CrocConfig) GetServer(serverID int) (server Server, err error) {
+func (config *AppConfig) GetServer(serverID int) (server Server, err error) {
 	// get json bytes from the panel.
 	fmt.Sprintf("servers/%d?include=allocations", serverID)
 	serverBytes, err := config.queryApplicationAPI(fmt.Sprintf("servers/%d?include=allocations", serverID), "get", nil)
@@ -188,7 +190,7 @@ func (config *CrocConfig) GetServer(serverID int) (server Server, err error) {
 }
 
 // GetServerAllocations will return an array of SererAllocAttributes
-func (config *CrocConfig) GetServerAllocations(serverID int) (serverAllocations []SererAllocAttributes, err error) {
+func (config *AppConfig) GetServerAllocations(serverID int) (serverAllocations []SererAllocAttributes, err error) {
 	var server Server
 
 	// get json bytes from the panel.
@@ -213,7 +215,7 @@ func (config *CrocConfig) GetServerAllocations(serverID int) (serverAllocations 
 
 // CreateServer creates a new server via the API.
 // A complete ServerChange is required.
-func (config *CrocConfig) CreateServer(newServer ServerChange) (server Server, err error) {
+func (config *AppConfig) CreateServer(newServer ServerChange) (server Server, err error) {
 	newServerBytes, err := json.Marshal(newServer)
 	if err != nil {
 		return
@@ -237,7 +239,7 @@ func (config *CrocConfig) CreateServer(newServer ServerChange) (server Server, e
 
 // EditServerDetails creates a new server via the API.
 // The server name and user are required when updating a server.
-func (config *CrocConfig) EditServerDetails(newServer ServerChange, serverID int) (server Server, err error) {
+func (config *AppConfig) EditServerDetails(newServer ServerChange, serverID int) (server Server, err error) {
 	editServerBytes, err := json.Marshal(newServer)
 	if err != nil {
 		return
@@ -261,7 +263,7 @@ func (config *CrocConfig) EditServerDetails(newServer ServerChange, serverID int
 
 // EditServerBuild creates a new server via the API.
 // The server name and user are required when updating a server.
-func (config *CrocConfig) EditServerBuild(newServer ServerChange, serverID int) (server Server, err error) {
+func (config *AppConfig) EditServerBuild(newServer ServerChange, serverID int) (server Server, err error) {
 	editServerBytes, err := json.Marshal(newServer)
 	if err != nil {
 		return
@@ -285,7 +287,7 @@ func (config *CrocConfig) EditServerBuild(newServer ServerChange, serverID int) 
 
 // EditServerStartup creates a new server via the API.
 // The server name and user are required when updating a server.
-func (config *CrocConfig) EditServerStartup(newServer ServerChange, serverID int) (server Server, err error) {
+func (config *AppConfig) EditServerStartup(newServer ServerChange, serverID int) (server Server, err error) {
 	editServerBytes, err := json.Marshal(newServer)
 	if err != nil {
 		return
@@ -309,7 +311,7 @@ func (config *CrocConfig) EditServerStartup(newServer ServerChange, serverID int
 
 // DeleteServer deletes a server.
 // It only requires a server id as a string
-func (config *CrocConfig) DeleteServer(serverID int) error {
+func (config *AppConfig) DeleteServer(serverID int) error {
 	// get json bytes from the panel.
 	_, err := config.queryApplicationAPI("servers/"+strconv.Itoa(serverID), "delete", nil)
 	if err != nil {
