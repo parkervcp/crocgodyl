@@ -40,12 +40,12 @@ func init() {
 }
 
 func main() {
-	application()
+	//application()
 	client()
 }
 
 func application() {
-	panel, err := croc.NewAppClient(Config.PanelURL, Config.APIToken)
+	panel, err := croc.NewApp(Config.PanelURL, Config.APIToken)
 	if err != nil {
 		log.Fatal(err)
 	} else {
@@ -445,31 +445,43 @@ func application() {
 }
 
 func client() {
-	client, err := croc.NewClientClient(Config.PanelURL, Config.ClientToken)
+	client, err := croc.NewClient(Config.PanelURL, Config.ClientToken)
 	if err != nil {
 		log.Fatal(err)
 	} else {
 		log.Println("panel connection successful")
 	}
 
+	// for me this is a BungeeCord server on my test server.
+
+	fmt.Println("getting server info")
 	if servers, err := client.GetClientServers(); err != nil {
 		log.Fatal(err)
 	} else {
+		// log server name and identifier
 		fmt.Println(servers.ClientServers[0].Attributes.Name)
 		fmt.Println(servers.ClientServers[0].Attributes.Identifier)
-	}
+		// get server status
+		if serverUsage, err := client.GetClientServerUtilization(servers.ClientServers[0].Attributes.Identifier); err != nil {
+			log.Fatal(err)
+		} else if serverUsage.Attributes.State == "off" {
+			log.Println("server is offline")
+		} else {
+			fmt.Println("sending command to server console")
+			// send command to server.
+			if err := client.SendServerCommand(servers.ClientServers[0].Attributes.Identifier, croc.ClientServerConsole{Command: "say hello"}); err != nil {
+				log.Fatal(err)
+			} else {
+				fmt.Println("server command sent")
+			}
 
-	serverCommand := croc.ClientServerConsoleCommand{"say hello"}
-
-	if err := client.SendServerCommand("2186b506", serverCommand); err != nil {
-		log.Fatal(err)
-	} else {
-		fmt.Println("server command sent")
-	}
-
-	if err := client.SendServerPowerSignal("2186b506", "restart"); err != nil {
-		log.Fatal(err)
-	} else {
-		fmt.Println("server restart signal sent")
+			// send power action to server
+			fmt.Println("sending restart command to server")
+			if err := client.SendServerPowerSignal(servers.ClientServers[0].Attributes.Identifier, "restart"); err != nil {
+				log.Fatal(err)
+			} else {
+				fmt.Println("server restart signal sent")
+			}
+		}
 	}
 }
