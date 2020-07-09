@@ -48,8 +48,8 @@ type Links struct {
 
 // AppConfig is the config for crocgodyl
 type AppConfig struct {
-	PanelURL    string
-	AppToken    string
+	PanelURL string
+	AppToken string
 }
 
 type ClientConfig struct {
@@ -62,7 +62,7 @@ type ClientConfig struct {
 //
 
 // NewCrocConfig sets up the API interface with
-func NewAppClient(panelURL string, appToken string) (config *AppConfig, err error) {
+func NewApp(panelURL string, appToken string) (config *AppConfig, err error) {
 
 	config = &AppConfig{}
 
@@ -90,7 +90,7 @@ func NewAppClient(panelURL string, appToken string) (config *AppConfig, err erro
 }
 
 // NewCrocConfig sets up the API interface with
-func NewClientClient(panelURL string, clientToken string) (config *ClientConfig, err error) {
+func NewClient(panelURL string, clientToken string) (config *ClientConfig, err error) {
 
 	config = &ClientConfig{}
 
