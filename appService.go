@@ -7,16 +7,16 @@ import (
 	"time"
 )
 
-// Application Service API - Includes Nests and Eggs
+// Application Service API - Includes AppNests and Eggs
 
-// Nests is the struct for the nests on the panel.
-type Nests struct {
+// AppNests is the struct for the nests on the panel.
+type AppNests struct {
 	Object string `json:"object,omitempty"`
-	Nest   []Nest `json:"data,omitempty"`
+	Nests  []Nest `json:"data,omitempty"`
 	Meta   Meta   `json:"meta,omitempty"`
 }
 
-// Nest is the struct for a nest on the panel.
+// Nests is the struct for a nest on the panel.
 type Nest struct {
 	Object     string `json:"object,omitempty"`
 	Attributes struct {
@@ -150,46 +150,91 @@ func (e *EggVariables) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// GetNests returns all available nodes.
-func (config *CrocConfig) GetNests() (nests Nests, err error) {
+// GetLocationByPage returns all available locations by page.
+func (config *AppConfig) getNestsByPage(pageID int) (nests AppNests, err error) {
 	// get json bytes from the panel.
-	nestBytes, err := config.queryApplicationAPI("nests", "get", nil)
+	nestBytes, err := config.queryApplicationAPI(fmt.Sprintf("nests?page=%d", pageID), "get", nil)
 	if err != nil {
-		return nests, err
+		return
 	}
 
 	// Unmarshal the bytes to a usable struct.
 	err = json.Unmarshal(nestBytes, &nests)
 	if err != nil {
-		return nests, err
+		return
+	}
+	return
+}
+
+// GetNests returns all available nodes.
+func (config *AppConfig) GetNests() (nests AppNests, err error) {
+	// get json bytes from the panel.
+	nestBytes, err := config.queryApplicationAPI("nests", "get", nil)
+	if err != nil {
+		return
 	}
 
-	return nests, nil
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(nestBytes, &nests)
+	if err != nil {
+		return
+	}
+
+	if nests.Meta.Pagination.TotalPages > 1 {
+		for i := 1; i >= nests.Meta.Pagination.TotalPages; i++ {
+			pageNests, err := config.getNestsByPage(i)
+			if err != nil {
+				return nests, err
+			}
+			for _, nest := range pageNests.Nests {
+				nests.Nests = append(nests.Nests, nest)
+			}
+		}
+	}
+
+	return
+}
+
+// GetNests returns all available nodes.
+func (config *AppConfig) GetNest(nestID int) (nest Nest, err error) {
+	// get json bytes from the panel.
+	nestBytes, err := config.queryApplicationAPI(fmt.Sprintf("nests/%d", nestID), "get", nil)
+	if err != nil {
+		return
+	}
+
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(nestBytes, &nest)
+	if err != nil {
+		return
+	}
+
+	return
 }
 
 // GetEggs returns all available nodes.
-func (config *CrocConfig) GetNestEggs(nestID int) (eggs NestEggs, err error) {
+func (config *AppConfig) GetNestEggs(nestID int) (eggs NestEggs, err error) {
 	// get json bytes from the panel.
 	nestEggsBytes, err := config.queryApplicationAPI(fmt.Sprintf("nests/%d/eggs", nestID), "get", nil)
 	if err != nil {
-		return eggs, err
+		return
 	}
 
 	// Unmarshal the bytes to a usable struct.
 	err = json.Unmarshal(nestEggsBytes, &eggs)
 	if err != nil {
-		return eggs, err
+		return
 	}
 
-	return eggs, nil
+	return
 }
 
 // GetEggs returns all available nodes.
-func (config *CrocConfig) GetEgg(nestID, eggID int) (egg Egg, err error) {
+func (config *AppConfig) GetEgg(nestID, eggID int) (egg Egg, err error) {
 	// get json bytes from the panel.
 	eggBytes, err := config.queryApplicationAPI(fmt.Sprintf("nests/%d/eggs/%d?include=variables", nestID, eggID), "get", nil)
 	if err != nil {
-		return egg, err
+		return
 	}
 
 	// Unmarshal the bytes to a usable struct.
@@ -197,5 +242,5 @@ func (config *CrocConfig) GetEgg(nestID, eggID int) (egg Egg, err error) {
 		return
 	}
 
-	return egg, nil
+	return
 }

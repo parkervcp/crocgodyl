@@ -2,21 +2,20 @@ package crocgodyl
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 )
 
-// Application Node API
+// Application AppNodes API
 
-// Nodes is the struct for all the nodes added to the panel.
-type Nodes struct {
+// AppNodes is the struct for all the nodes added to the panel.
+type AppNodes struct {
 	Object string `json:"object,omitempty"`
-	Node   []Node `json:"data,omitempty"`
+	Nodes  []Node `json:"data,omitempty"`
 	Meta   Meta   `json:"meta,omitempty"`
 }
 
-// Node is the struct for a single node.
+// AppNodes is the struct for a single node.
 type Node struct {
 	Object     string         `json:"object,omitempty"`
 	Attributes NodeAttributes `json:"attributes,omitempty"`
@@ -68,33 +67,10 @@ type AllocationAttributes struct {
 	Assigned bool     `json:"assigned,omitempty"`
 }
 
-// GetNode information on a single node.
-// nodeID is an int
-func (config *CrocConfig) GetNode(nodeID int) (Node, error) {
-	var node Node
-	endpoint := fmt.Sprintf("nodes/%d", nodeID)
-
-	nodeBytes, err := config.queryApplicationAPI(endpoint, "get", nil)
-	if err != nil {
-		return node, err
-	}
-
-	// Get node info from the panel
-	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(nodeBytes, &node)
-	if err != nil {
-		return node, err
-	}
-
-	return node, nil
-}
-
 // GetNodesByPage information on a single node.
 // nodeID is an int
-func (config *CrocConfig) getNodesByPage(pageID int) (nodes Nodes, err error) {
-	endpoint := fmt.Sprintf("nodes?page=%d", pageID)
-
-	nodeBytes, err := config.queryApplicationAPI(endpoint, "get", nil)
+func (config *AppConfig) getNodesByPage(pageID int) (nodes AppNodes, err error) {
+	nodeBytes, err := config.queryApplicationAPI(fmt.Sprintf("nodes?page=%d", pageID), "get", nil)
 	if err != nil {
 		return nodes, err
 	}
@@ -109,31 +85,57 @@ func (config *CrocConfig) getNodesByPage(pageID int) (nodes Nodes, err error) {
 }
 
 // GetNodes returns all available nodes.
-func (config *CrocConfig) GetNodes() (Nodes, error) {
-	var nodesAll Nodes
-	i := 0
+func (config *AppConfig) GetNodes() (nodes AppNodes, err error) {
+	// Get node info from the panel
+	nodeBytes, err := config.queryApplicationAPI("nodes", "get", nil)
+	if err != nil {
+		return
+	}
 
-	for {
-		i++
-		nodes, err := config.getNodesByPage(i)
-		if err != nil {
-			return nodesAll, err
-		}
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(nodeBytes, &nodes)
+	if err != nil {
+		return
+	}
 
-		for _, node := range nodes.Node {
-			nodesAll.Node = append(nodesAll.Node, node)
-		}
-
-		if i == nodes.Meta.Pagination.TotalPages {
-			break
+	if nodes.Meta.Pagination.TotalPages > 1 {
+		for i := 1; i >= nodes.Meta.Pagination.TotalPages; i++ {
+			pageNodes, err := config.getNodesByPage(i)
+			if err != nil {
+				return nodes, err
+			}
+			for _, location := range pageNodes.Nodes {
+				nodes.Nodes = append(nodes.Nodes, location)
+			}
 		}
 	}
-	return nodesAll, nil
+
+	return
+}
+
+// GetNode information on a single node.
+// nodeID is an int
+func (config *AppConfig) GetNode(nodeID int) (node Node, err error) {
+	endpoint := fmt.Sprintf("nodes/%d", nodeID)
+
+	nodeBytes, err := config.queryApplicationAPI(endpoint, "get", nil)
+	if err != nil {
+		return
+	}
+
+	// Get node info from the panel
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(nodeBytes, &node)
+	if err != nil {
+		return
+	}
+
+	return
 }
 
 // GetNodeAllocationsByPage information on a single node by page count.
 // nodeID is an int
-func (config *CrocConfig) getNodeAllocationsByPage(nodeID int, pageID int) (NodeAllocations, error) {
+func (config *AppConfig) getNodeAllocationsByPage(nodeID int, pageID int) (NodeAllocations, error) {
 	var allocations NodeAllocations
 	endpoint := fmt.Sprintf("nodes/%d/allocations?page=%d", nodeID, pageID)
 
@@ -153,32 +155,36 @@ func (config *CrocConfig) getNodeAllocationsByPage(nodeID int, pageID int) (Node
 
 // GetNodeAllocations information on a single node.
 // Depending on how man allocations you have this may take a while.
-func (config *CrocConfig) GetNodeAllocations(nodeID int) (NodeAllocations, error) {
-	var allocationsAll NodeAllocations
-	i := 0
+func (config *AppConfig) GetNodeAllocations(nodeID int) (allocations NodeAllocations, err error) {
+	// Get allocation info from the panel
+	allocBytes, err := config.queryApplicationAPI(fmt.Sprintf("nodes/%d/allocations?page=%d", nodeID), "get", nil)
+	if err != nil {
+		return
+	}
 
-	for {
-		i++
+	// Unmarshal the bytes to a usable struct.
+	err = json.Unmarshal(allocBytes, &allocations)
+	if err != nil {
+		return
+	}
+
+	for i := 1; i >= allocations.Meta.Pagination.TotalPages; i++ {
 		allocations, err := config.getNodeAllocationsByPage(nodeID, i)
 		if err != nil {
-			return allocationsAll, err
+			return allocations, err
 		}
-
 		for _, allocation := range allocations.Allocations {
-			allocationsAll.Allocations = append(allocationsAll.Allocations, allocation)
-		}
-
-		if i == allocations.Meta.Pagination.TotalPages {
-			break
+			allocations.Allocations = append(allocations.Allocations, allocation)
 		}
 	}
-	return allocationsAll, nil
+
+	return
 }
 
 // GetNodeAllocationByPort returns the allocation id and assigned status
 // returns portID 0 if the port is not assigned to the node.
-// returns if the port is used or now
-func (config *CrocConfig) GetNodeAllocationByPort(nodeID int, portNum int) (portID int, used bool, err error) {
+// returns if the port is used or not
+func (config *AppConfig) GetNodeAllocationByPort(nodeID int, portNum int) (portID int, used bool, err error) {
 	allocations, err := config.GetNodeAllocations(nodeID)
 	if err != nil {
 		return
@@ -194,11 +200,13 @@ func (config *CrocConfig) GetNodeAllocationByPort(nodeID int, portNum int) (port
 }
 
 // GetNodeAllocationByID returns the allocation id and assigned status
-// returns portID, inuse bool, error
-func (config *CrocConfig) GetNodeAllocationByID(nodeID int, allocationID int) (int, bool, error) {
+// Takes a node ID and Allocation ID
+// returns port 0 if the port is not assigned to the node.
+// returns if the port is used or not
+func (config *AppConfig) GetNodeAllocationByID(nodeID int, allocationID int) (port int, used bool, err error) {
 	allocations, err := config.GetNodeAllocations(nodeID)
 	if err != nil {
-		return 0, false, err
+		return
 	}
 
 	for _, allocation := range allocations.Allocations {
@@ -206,93 +214,99 @@ func (config *CrocConfig) GetNodeAllocationByID(nodeID int, allocationID int) (i
 			return allocation.Attributes.Port, allocation.Attributes.Assigned, nil
 		}
 	}
-	return 0, false, errors.New("id not found")
+
+	return
 }
 
-// CreateNode creates a user.
-func (config *CrocConfig) CreateNode(newNode NodeAttributes) (Node, error) {
-	var nodeDetails Node
+// Node Modifications
+
+// CreateNode creates a Node.
+func (config *AppConfig) CreateNode(newNode NodeAttributes) (node Node, err error) {
 	endpoint := fmt.Sprintf("nodes/")
 
 	newNodeBytes, err := json.Marshal(newNode)
 	if err != nil {
-		return nodeDetails, err
+		return
 	}
 
 	// get json bytes from the panel.
 	nodeBytes, err := config.queryApplicationAPI(endpoint, "post", newNodeBytes)
 	if err != nil {
-		return nodeDetails, err
+		return
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(nodeBytes, &nodeDetails)
+	err = json.Unmarshal(nodeBytes, &node)
 	if err != nil {
-		return nodeDetails, err
+		return
 	}
-	return nodeDetails, nil
-}
-
-// CreateNodeAllocations creates a user.
-// the panel responds with a 204
-func (config *CrocConfig) CreateNodeAllocations(newNodeAllocations AllocationAttributes, nodeID int) error {
-	endpoint := fmt.Sprintf("nodes/%d/allocations", nodeID)
-
-	newNodeAllocBytes, err := json.Marshal(newNodeAllocations)
-	if err != nil {
-		return err
-	}
-
-	// get json bytes from the panel.
-	_, err = config.queryApplicationAPI(endpoint, "post", newNodeAllocBytes)
-	if err != nil {
-		return err
-	}
-	return nil
+	return
 }
 
 // EditNode edits a nodes information.
-func (config *CrocConfig) EditNode(editNode NodeAttributes, nodeID int) (Node, error) {
-	var nodeDetails Node
+func (config *AppConfig) EditNode(editNode NodeAttributes, nodeID int) (node Node, err error) {
 	endpoint := fmt.Sprintf("nodes/%d", nodeID)
 
 	editNodeBytes, err := json.Marshal(editNode)
 	if err != nil {
-		return nodeDetails, err
+		return
 	}
 
 	// get json bytes from the panel.
 	nodeBytes, err := config.queryApplicationAPI(endpoint, "patch", editNodeBytes)
 	if err != nil {
-		return nodeDetails, err
+		return
 	}
 
 	// Get server info from the panel
 	// Unmarshal the bytes to a usable struct.
-	err = json.Unmarshal(nodeBytes, &nodeDetails)
+	err = json.Unmarshal(nodeBytes, &node)
 	if err != nil {
-		return nodeDetails, err
+		return
 	}
-	return nodeDetails, nil
+	return
 }
 
 // DeleteNode send a delete request to the panel for a node
+// the panel responds with a 204 and no data
 // Returns any errors from the panel in json format
-func (config *CrocConfig) DeleteNode(nodeID int) error {
+func (config *AppConfig) DeleteNode(nodeID int) (err error) {
 	endpoint := fmt.Sprintf("nodes/%d", nodeID)
 
 	// get json bytes from the panel.
-	_, err := config.queryApplicationAPI(endpoint, "delete", nil)
+	_, err = config.queryApplicationAPI(endpoint, "delete", nil)
 	if err != nil {
 		return err
 	}
-	return nil
+	return
+}
+
+// Allocation Modifications
+
+// CreateNodeAllocations adds Node Allocations.
+// the panel responds with a 204 and no data
+// Returns any errors from the panel in json format.
+func (config *AppConfig) CreateNodeAllocations(newNodeAllocations AllocationAttributes, nodeID int) (err error) {
+	endpoint := fmt.Sprintf("nodes/%d/allocations", nodeID)
+
+	newNodeAllocBytes, err := json.Marshal(newNodeAllocations)
+	if err != nil {
+		return
+	}
+
+	// get json bytes from the panel.
+	_, err = config.queryApplicationAPI(endpoint, "post", newNodeAllocBytes)
+	if err != nil {
+		return
+	}
+	return
 }
 
 // DeleteNodeAllocation send a delete request to the panel for a node allocation.
+// the panel responds with a 204 and no data
 // Returns any errors from the panel in json format.
-func (config *CrocConfig) DeleteNodeAllocation(nodeID int, allocID int) (err error) {
+func (config *AppConfig) DeleteNodeAllocation(nodeID int, allocID int) (err error) {
 	endpoint := fmt.Sprintf("nodes/%d/allocations/%d", nodeID, allocID)
 
 	// get json bytes from the panel.

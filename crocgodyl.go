@@ -1,10 +1,7 @@
 package crocgodyl
 
 import (
-	"bytes"
 	"errors"
-	"io/ioutil"
-	"net/http"
 )
 
 // VERSION of crocgodyl follows Semantic Versioning. (http://semver.org/)
@@ -49,11 +46,15 @@ type Links struct {
 // crocgodyl
 //
 
-// CrocConfig is the config for crocgodyl
-type CrocConfig struct {
+// AppConfig is the config for crocgodyl
+type AppConfig struct {
+	PanelURL string
+	AppToken string
+}
+
+type ClientConfig struct {
 	PanelURL    string
 	ClientToken string
-	AppToken    string
 }
 
 //
@@ -61,9 +62,9 @@ type CrocConfig struct {
 //
 
 // NewCrocConfig sets up the API interface with
-func NewApplication(panelURL string, appToken string) (config *CrocConfig, err error) {
+func NewApp(panelURL string, appToken string) (config *AppConfig, err error) {
 
-	config = &CrocConfig{}
+	config = &AppConfig{}
 
 	if panelURL == "" && appToken == "" {
 		return config, errors.New("you need to configure the panel and at least one api token")
@@ -81,54 +82,37 @@ func NewApplication(panelURL string, appToken string) (config *CrocConfig, err e
 	config.AppToken = appToken
 
 	// validate the server is up and available
-	if _, err = config.GetUsers(); err != nil {
+	if _, err = config.getUserByPage(1); err != nil {
 		return config, err
 	}
 
 	return
 }
 
-func (config *CrocConfig) queryApplicationAPI(endpoint, request string, data []byte) (bodyBytes []byte, err error) {
-	//http get json request
-	client := &http.Client{}
-	req, _ := http.NewRequest("GET", config.PanelURL+"/api/application/"+endpoint, nil)
+// NewCrocConfig sets up the API interface with
+func NewClient(panelURL string, clientToken string) (config *ClientConfig, err error) {
 
-	switch {
-	case request == "get":
-	case request == "post":
-		req, _ = http.NewRequest("POST", config.PanelURL+"/api/application/"+endpoint, bytes.NewBuffer(data))
-	case request == "patch":
-		req, _ = http.NewRequest("PATCH", config.PanelURL+"/api/application/"+endpoint, bytes.NewBuffer(data))
-	case request == "delete":
-		req, _ = http.NewRequest("DELETE", config.PanelURL+"/api/application/"+endpoint, nil)
-	default:
+	config = &ClientConfig{}
+
+	if panelURL == "" && clientToken == "" {
+		return config, errors.New("you need to configure the panel and at least one api token")
 	}
 
-	//Sets request header for the http request
-	req.Header.Add("Authorization", "Bearer "+config.AppToken)
-	req.Header.Add("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-
-	//send request
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
+	if panelURL == "" {
+		return config, errors.New("a panel URL is required to use the API")
 	}
 
-	if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 202 && resp.StatusCode != 204 {
-		bodyBytes, _ = ioutil.ReadAll(resp.Body)
-		return bodyBytes, errors.New(string(bodyBytes))
+	if clientToken == "" {
+		return config, errors.New("an application token is required")
 	}
 
-	if resp.Body != nil {
-		bodyBytes, _ = ioutil.ReadAll(resp.Body)
+	config.PanelURL = panelURL
+	config.ClientToken = clientToken
+
+	// validate the server is up and available
+	if _, err = config.getClientServersByPage(1); err != nil {
+		return config, err
 	}
 
-	//Close response thread
-	defer resp.Body.Close()
-
-	bodyBytes = bytes.Replace(bodyBytes, []byte("[]"), []byte("{}"), -1)
-
-	//return byte structure
 	return
 }

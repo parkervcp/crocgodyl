@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -39,7 +40,12 @@ func init() {
 }
 
 func main() {
-	panel, err := croc.NewApplication(Config.PanelURL, Config.APIToken)
+	//application()
+	client()
+}
+
+func application() {
+	panel, err := croc.NewApp(Config.PanelURL, Config.APIToken)
 	if err != nil {
 		log.Fatal(err)
 	} else {
@@ -50,7 +56,7 @@ func main() {
 	if users, err := panel.GetUsers(); err != nil {
 		log.Fatal(err)
 	} else {
-		log.Println(users.User[0].Attributes.Username)
+		log.Println(users.Users[0].Attributes.Username)
 	}
 
 	/*
@@ -67,7 +73,7 @@ func main() {
 		}
 
 		fmt.Println("All users on the panel")
-		for _, user := range userData.User {
+		for _, user := range userData.Users {
 			fmt.Printf("ID: %d Name: %s\n", user.Attributes.ID, user.Attributes.Username)
 		}
 
@@ -79,7 +85,7 @@ func main() {
 			Email:     "user@domain.tld",
 			Username:  "user1234",
 			FirstName: "Some",
-			LastName:  "User",
+			LastName:  "Users",
 		}
 
 		newUserInfo, err := panel.CreateUser(newUser)
@@ -87,7 +93,7 @@ func main() {
 			log.Println("Failed to create user.")
 			log.Println(err)
 		} else {
-			log.Println("User created successfully.")
+			log.Println("Users created successfully.")
 			fmt.Println("user info")
 			fmt.Printf("ID: %d Username: %s\n", newUserInfo.Attributes.ID, newUserInfo.Attributes.Username)
 		}
@@ -104,10 +110,10 @@ func main() {
 
 		editUserInfo, err := panel.EditUser(editUser, 3)
 		if err != nil {
-			log.Println("User edit failed.")
+			log.Println("Users edit failed.")
 			log.Println(err)
 		} else {
-			log.Println("User edited successfully.")
+			log.Println("Users edited successfully.")
 			fmt.Println("user info")
 			fmt.Printf("ID: %d Name: %s\n", editUserInfo.Attributes.ID, editUserInfo.Attributes.Username)
 		}
@@ -116,7 +122,7 @@ func main() {
 		if err != nil {
 			log.Println(err)
 		} else {
-			log.Println("User deleted succesfully.")
+			log.Println("Users deleted succesfully.")
 		}
 	*/
 
@@ -135,7 +141,7 @@ func main() {
 		}
 
 		fmt.Println("All users on the panel")
-		for _, location := range locationsData.Locations {
+		for _, location := range locationsData.AppLocations {
 			fmt.Printf("ID: %d Name: %s\n", location.Attributes.ID, location.Attributes.Long)
 		}
 
@@ -194,7 +200,7 @@ func main() {
 	*/
 
 	/*
-		// All Nodes
+		// All AppNodes
 		fmt.Println("Listing all nodes on the panel.")
 		nodesData, err := panel.GetNodes()
 		if err != nil {
@@ -202,12 +208,12 @@ func main() {
 		}
 
 		fmt.Println("All nodes on the panel")
-		for _, node := range nodesData.Node {
+		for _, node := range nodesData.AppNodes {
 			fmt.Printf("ID: %d Name: %s\n", node.Attributes.ID, node.Attributes.Name)
 		}
 
-		// Single Node
-		fmt.Println("Information on Node 1")
+		// Single AppNodes
+		fmt.Println("Information on AppNodes 1")
 		nodeData, err := panel.GetNode(1)
 		if err != nil {
 			log.Println("There was an error getting the locations.")
@@ -230,8 +236,8 @@ func main() {
 			fmt.Printf("Allocation id: %d\nAssigned: %t\n", allocationPort, allocationAssigned)
 		}
 
-		// Single Node All Ports and allocations
-		fmt.Println("Allocations on Node 1")
+		// Single AppNodes All Ports and allocations
+		fmt.Println("Allocations on AppNodes 1")
 		nodeAllocData, err := panel.GetNodeAllocations(2)
 		if err != nil {
 			log.Println(err)
@@ -335,7 +341,7 @@ func main() {
 			log.Println("There was an error getting the servers.")
 		}
 
-		for _, server := range serversData.Server {
+		for _, server := range serversData.Servers {
 			fmt.Printf("ID: %d Name: %s\n", server.Attributes.ID, server.Attributes.Name)
 		}
 
@@ -367,8 +373,8 @@ func main() {
 
 		// The rest of the server can all be configured as a single struct.
 		newServer := croc.ServerChange{
-			Name:        "A Minecraft Server",
-			User:        1,
+			Name:        "A Minecraft Servers",
+			Users:        1,
 			Egg:         5,
 			DockerImage: `quay.io/pterodactyl/core:java`,
 			Startup:     "java -Xms128M -Xmx {{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}}",
@@ -395,7 +401,7 @@ func main() {
 		if err != nil {
 			log.Println(err)
 		} else {
-			log.Println("Server created successfully.")
+			log.Println("Servers created successfully.")
 			fmt.Println("New server info")
 			fmt.Printf("ID: %d Name: %s\n", newServerInfo.Attributes.ID, newServerInfo.Attributes.Name)
 		}
@@ -403,8 +409,8 @@ func main() {
 		fmt.Println("Editing server details.")
 
 		editServer := croc.ServerChange{
-			Name: "An Awesone Minecraft Server",
-			User: 1,
+			Name: "An Awesone Minecraft Servers",
+			Users: 1,
 		}
 
 		editedServerInfo, err := panel.EditServerDetails(editServer, 19)
@@ -417,8 +423,8 @@ func main() {
 		fmt.Println("Editing server build.")
 
 		editServer = croc.ServerChange{
-			Name: "An Awesone Minecraft Server",
-			User: 1,
+			Name: "An Awesone Minecraft Servers",
+			Users: 1,
 		}
 
 		editedServerInfo, err = panel.EditServerDetails(editServer, 19)
@@ -433,7 +439,49 @@ func main() {
 		if err != nil {
 			log.Println(err)
 		} else {
-			log.Println("Server deleted succesfully.")
+			log.Println("Servers deleted succesfully.")
 		}
 	*/
+}
+
+func client() {
+	client, err := croc.NewClient(Config.PanelURL, Config.ClientToken)
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		log.Println("panel connection successful")
+	}
+
+	// for me this is a BungeeCord server on my test server.
+
+	fmt.Println("getting server info")
+	if servers, err := client.GetClientServers(); err != nil {
+		log.Fatal(err)
+	} else {
+		// log server name and identifier
+		fmt.Println(servers.ClientServers[0].Attributes.Name)
+		fmt.Println(servers.ClientServers[0].Attributes.Identifier)
+		// get server status
+		if serverUsage, err := client.GetClientServerUtilization(servers.ClientServers[0].Attributes.Identifier); err != nil {
+			log.Fatal(err)
+		} else if serverUsage.Attributes.State == "off" {
+			log.Println("server is offline")
+		} else {
+			fmt.Println("sending command to server console")
+			// send command to server.
+			if err := client.SendServerCommand(servers.ClientServers[0].Attributes.Identifier, croc.ClientServerConsole{Command: "say hello"}); err != nil {
+				log.Fatal(err)
+			} else {
+				fmt.Println("server command sent")
+			}
+
+			// send power action to server
+			fmt.Println("sending restart command to server")
+			if err := client.SendServerPowerSignal(servers.ClientServers[0].Attributes.Identifier, "restart"); err != nil {
+				log.Fatal(err)
+			} else {
+				fmt.Println("server restart signal sent")
+			}
+		}
+	}
 }

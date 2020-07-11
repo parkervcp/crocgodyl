@@ -7,26 +7,23 @@ import (
 	"net/http"
 )
 
-// --------------------------------------------------------------
-// Client API
-
-func (config *ClientConfig) queryClientAPI(endpoint, request string, data []byte) (bodyBytes []byte, err error) {
+func (config *AppConfig) queryApplicationAPI(endpoint, request string, data []byte) (bodyBytes []byte, err error) {
 	//http get json request
 	client := &http.Client{}
-	req, _ := http.NewRequest("GET", config.PanelURL+"/api/client/"+endpoint, nil)
+	req, _ := http.NewRequest("GET", config.PanelURL+"/api/application/"+endpoint, nil)
 
 	switch {
 	case request == "post":
-		req, _ = http.NewRequest("POST", config.PanelURL+"/api/client/"+endpoint, bytes.NewBuffer(data))
+		req, _ = http.NewRequest("POST", config.PanelURL+"/api/application/"+endpoint, bytes.NewBuffer(data))
 	case request == "patch":
-		req, _ = http.NewRequest("PATCH", config.PanelURL+"/api/client/"+endpoint, bytes.NewBuffer(data))
+		req, _ = http.NewRequest("PATCH", config.PanelURL+"/api/application/"+endpoint, bytes.NewBuffer(data))
 	case request == "delete":
-		req, _ = http.NewRequest("DELETE", config.PanelURL+"/api/client/"+endpoint, nil)
+		req, _ = http.NewRequest("DELETE", config.PanelURL+"/api/application/"+endpoint, nil)
 	default:
 	}
 
 	//Sets request header for the http request
-	req.Header.Add("Authorization", "Bearer "+config.ClientToken)
+	req.Header.Add("Authorization", "Bearer "+config.AppToken)
 	req.Header.Add("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
