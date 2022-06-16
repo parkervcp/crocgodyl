@@ -1,118 +1,114 @@
 package crocgodyl
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
+	"net/http"
 )
 
-// VERSION of crocgodyl follows Semantic Versioning. (http://semver.org/)
-const VERSION = "0.0.2-alpha"
+const Version = "0.0.3"
 
-// ErrorResponse is the response from the panels for errors.
-type ErrorResponse struct {
-	Errors []Error `json:"errors"`
-}
-
-// Error is the struct from the panels for errors.
-type Error struct {
-	Code   string `json:"code,omitempty"`
-	Status string `json:"status,omitempty"`
-	Detail string `json:"detail,omitempty"`
-	Source struct {
-		Field string `json:"field,omitempty"`
-	} `json:"source,omitempty"`
-}
-
-// Meta is the meta information on some queries
-type Meta struct {
-	Pagination Pagination `json:"pagination,omitempty"`
-}
-
-// Pagination is the information how many responses there on a page and how many pages there are.
-type Pagination struct {
-	Total       int   `json:"total,omitempty"`
-	Count       int   `json:"count,omitempty"`
-	PerPage     int   `json:"per_page,omitempty"`
-	CurrentPage int   `json:"current_page,omitempty"`
-	TotalPages  int   `json:"total_pages,omitempty"`
-	Links       Links `json:"links"`
-}
-
-type Links struct {
-	Next     string `json:"next"`
-	Previous string `json:"previous"`
-}
-
-//
-// crocgodyl
-//
-
-// AppConfig is the config for crocgodyl
-type AppConfig struct {
+type Application struct {
 	PanelURL string
-	AppToken string
+	ApiKey   string
+	Http     *http.Client
 }
 
-type ClientConfig struct {
-	PanelURL    string
-	ClientToken string
+type Client struct {
+	PanelURL string
+	ApiKey   string
+	Http     *http.Client
 }
 
-//
-// Application code
-//
-
-// NewCrocConfig sets up the API interface with
-func NewApp(panelURL string, appToken string) (config *AppConfig, err error) {
-
-	config = &AppConfig{}
-
-	if panelURL == "" && appToken == "" {
-		return config, errors.New("you need to configure the panel and at least one api token")
+func NewApp(url, key string) (*Application, error) {
+	if url == "" {
+		return nil, errors.New("a valid panel url is required")
+	}
+	if key == "" {
+		return nil, errors.New("a valid application api key is required")
 	}
 
-	if panelURL == "" {
-		return config, errors.New("a panel URL is required to use the API")
+	app := Application{
+		PanelURL: url,
+		ApiKey:   key,
+		Http:     &http.Client{},
 	}
 
-	if appToken == "" {
-		return config, errors.New("an application token is required")
-	}
-
-	config.PanelURL = panelURL
-	config.AppToken = appToken
-
-	// validate the server is up and available
-	if _, err = config.getUserByPage(1); err != nil {
-		return config, err
-	}
-
-	return
+	return &app, nil
 }
 
-// NewCrocConfig sets up the API interface with
-func NewClient(panelURL string, clientToken string) (config *ClientConfig, err error) {
+func (a *Application) newRequest(method, path string, body io.Reader) *http.Request {
+	req, _ := http.NewRequest(method, fmt.Sprintf("%s/api/application%s", a.PanelURL, path), body)
 
-	config = &ClientConfig{}
+	req.Header.Add("User-Agent", "Crocgodyl v"+Version)
+	req.Header.Add("Authorization", "Bearer "+a.ApiKey)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
 
-	if panelURL == "" && clientToken == "" {
-		return config, errors.New("you need to configure the panel and at least one api token")
+	return req
+}
+
+func NewClient(url, key string) (*Client, error) {
+	if url == "" {
+		return nil, errors.New("a valid panel url is required")
+	}
+	if key == "" {
+		return nil, errors.New("a valid client api key is required")
 	}
 
-	if panelURL == "" {
-		return config, errors.New("a panel URL is required to use the API")
+	client := Client{
+		PanelURL: url,
+		ApiKey:   key,
+		Http:     &http.Client{},
 	}
 
-	if clientToken == "" {
-		return config, errors.New("an application token is required")
+	return &client, nil
+}
+
+func (a *Client) newRequest(method, path string, body io.Reader) *http.Request {
+	req, _ := http.NewRequest(method, fmt.Sprintf("%s/api/client%s", a.PanelURL, path), body)
+
+	req.Header.Add("User-Agent", "Crocgodyl v"+Version)
+	req.Header.Add("Authorization", "Bearer "+a.ApiKey)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	return req
+}
+
+func validate(res *http.Response) ([]byte, error) {
+	switch res.StatusCode {
+	case http.StatusOK:
+		fallthrough
+
+	case http.StatusAccepted:
+		fallthrough
+
+	case http.StatusCreated:
+		defer res.Body.Close()
+		buf, _ := io.ReadAll(res.Body)
+		return buf, nil
+
+	case http.StatusNoContent:
+		return nil, nil
+
+	default:
+		if res.StatusCode >= 500 {
+			return nil, errors.New("internal server error")
+		}
+
+		defer res.Body.Close()
+		buf, _ := io.ReadAll(res.Body)
+
+		var errs *struct {
+			Errors []ApiError
+		}
+		if err := json.Unmarshal(buf, errs); err != nil {
+			return nil, err
+		}
+
+		return nil, &errs.Errors[0]
 	}
-
-	config.PanelURL = panelURL
-	config.ClientToken = clientToken
-
-	// validate the server is up and available
-	if _, err = config.getClientServersByPage(1); err != nil {
-		return config, err
-	}
-
-	return
 }
