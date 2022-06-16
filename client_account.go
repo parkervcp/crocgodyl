@@ -181,7 +181,7 @@ func (c *Client) ApiKeys() ([]ApiKey, error) {
 		return nil, err
 	}
 
-	keys := make([]ApiKey, len(model.Data))
+	keys := make([]ApiKey, 0, len(model.Data))
 	for _, k := range model.Data {
 		keys = append(keys, k.Attributes)
 	}
