@@ -79,3 +79,25 @@ func (c *Client) Servers() ([]ClientServer, error) {
 
 	return servers, nil
 }
+
+func (c *Client) Server(identifier string) (*ClientServer, error) {
+	req := c.newRequest("GET", "/servers/"+identifier, nil)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	buf, err := validate(res)
+	if err != nil {
+		return nil, err
+	}
+
+	var model *struct {
+		Attributes ClientServer `json:"attributes"`
+	}
+	if err = json.Unmarshal(buf, &model); err != nil {
+		return nil, err
+	}
+
+	return &model.Attributes, err
+}
