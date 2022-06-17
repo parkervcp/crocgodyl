@@ -95,8 +95,8 @@ func validate(res *http.Response) ([]byte, error) {
 		return nil, nil
 
 	default:
-		if res.StatusCode >= 500 {
-			return nil, errors.New("internal server error")
+		if res.ContentLength <= 0 {
+			return nil, fmt.Errorf("unknown error: %s", res.Status)
 		}
 
 		defer res.Body.Close()
