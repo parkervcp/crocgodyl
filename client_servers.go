@@ -3,7 +3,14 @@ package crocgodyl
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"mime/multipart"
+	"net/url"
+	"os"
+	"path/filepath"
+	"time"
 )
 
 type Limits struct {
@@ -297,4 +304,419 @@ func (c *Client) DeleteDatabase(identifier, id string) error {
 	}
 
 	return nil
+}
+
+type File struct {
+	Name       string    `json:"name"`
+	Mode       string    `json:"mode"`
+	ModeBits   uint      `json:"mode_bits"`
+	Size       int64     `json:"size"`
+	IsFile     bool      `json:"is_file"`
+	IsSymlink  bool      `json:"is_symlink"`
+	MimeType   string    `json:"mime_type"`
+	CreatedAt  time.Time `json:"created_at"`
+	ModifiedAt time.Time `json:"modified_at,omitempty"`
+}
+
+func (c *Client) ServerFiles(identififer, root string) ([]File, error) {
+	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files?directory=%s", identififer, root), nil)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	buf, err := validate(res)
+	if err != nil {
+		return nil, err
+	}
+
+	var model *struct {
+		Data []struct {
+			Attributes File `json:"attributes"`
+		} `json:"data"`
+	}
+	if err = json.Unmarshal(buf, &model); err != nil {
+		return nil, err
+	}
+
+	files := make([]File, 0, len(model.Data))
+	for _, f := range model.Data {
+		files = append(files, f.Attributes)
+	}
+
+	return files, nil
+}
+
+func (c *Client) ServerFileContents(identifier, file string) ([]byte, error) {
+	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files/contents?file=%s", identifier, url.PathEscape(file)), nil)
+	req.Header.Set("Accept", "application/json,text/plain")
+
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return validate(res)
+}
+
+type Download struct {
+	client *Client
+	Name   string
+	Path   string
+	url    string
+}
+
+func (d *Download) Client() *Client {
+	return d.client
+}
+
+func (d *Download) URL() string {
+	return d.url
+}
+
+func (d *Download) Execute() error {
+	info, err := os.Stat(d.Path)
+	if err == nil {
+		if !info.IsDir() {
+			return errors.New("refusing to overwrite existing file path")
+		}
+	}
+
+	file, err := os.OpenFile(d.Name, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0o644)
+	if err != nil {
+		return err
+	}
+
+	res, err := d.client.Http.Get(d.URL())
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode != 200 {
+		return fmt.Errorf("recieved an unexpected response: %s", res.Status)
+	}
+
+	defer res.Body.Close()
+	io.Copy(file, res.Body)
+	return nil
+}
+
+func (c *Client) DownloadServerFile(identifier, file string) (*Download, error) {
+	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files/download?file=%s", identifier, file), nil)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	buf, err := validate(res)
+	if err != nil {
+		return nil, err
+	}
+
+	var model *struct {
+		Attributes struct {
+			URL string `json:"url"`
+		} `json:"attributes"`
+	}
+	if err = json.Unmarshal(buf, &model); err != nil {
+		return nil, err
+	}
+
+	_, name := filepath.Split(file)
+	path, _ := url.PathUnescape(file)
+	dl := Download{
+		client: c,
+		Name:   name,
+		Path:   path,
+		url:    model.Attributes.URL,
+	}
+
+	return &dl, nil
+}
+
+type RenameDescriptor struct {
+	Root  string `json:"root"`
+	Files []struct {
+		From string `json:"from"`
+		To   string `json:"to"`
+	} `json:"files"`
+}
+
+func (c *Client) RenameServerFiles(identifier string, files RenameDescriptor) error {
+	data, _ := json.Marshal(files)
+	body := bytes.Buffer{}
+	body.Write(data)
+
+	req := c.newRequest("PUT", fmt.Sprintf("/servers/%s/files/rename", identifier), &body)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if _, err = validate(res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) CopyServerFile(identifier, file, location string) error {
+	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/files/copy?file=%s", identifier, file), nil)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if _, err = validate(res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) WriteServerFileBuffer(identifier, name, header string, content []byte) error {
+	body := bytes.Buffer{}
+	body.Write(content)
+
+	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/files/write?file=%s", identifier, name), &body)
+	req.Header.Set("Content-Type", header)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if _, err = validate(res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) WriteServerFile(identifier, name, content string) error {
+	return c.WriteServerFileBuffer(identifier, name, "text/plain", []byte(content))
+}
+
+type CompressDescriptor struct {
+	Root  string   `json:"root"`
+	Files []string `json:"files"`
+}
+
+func (c *Client) CompressServerFiles(identifier string, files CompressDescriptor) error {
+	data, _ := json.Marshal(files)
+	body := bytes.Buffer{}
+	body.Write(data)
+
+	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/files/compress", identifier), &body)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if _, err = validate(res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type DecompressDescriptor struct {
+	Root string `json:"root"`
+	File string `json:"file"`
+}
+
+func (c *Client) DecompressServerFile(identifier string, file DecompressDescriptor) error {
+	data, _ := json.Marshal(file)
+	body := bytes.Buffer{}
+	body.Write(data)
+
+	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/files/decompress", identifier), &body)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if _, err = validate(res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type DeleteFilesDescriptor struct {
+	Root  string   `json:"root"`
+	Files []string `json:"files"`
+}
+
+func (c *Client) DeleteServerFiles(identifier string, files DeleteFilesDescriptor) error {
+	data, _ := json.Marshal(files)
+	body := bytes.Buffer{}
+	body.Write(data)
+
+	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/files/delete", identifier), &body)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if _, err = validate(res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type CreateFolderDescriptor struct {
+	Root string `json:"root"`
+	Name string `json:"name"`
+}
+
+func (c *Client) CreateServerFileFolder(identifier string, file CreateFolderDescriptor) error {
+	data, _ := json.Marshal(file)
+	body := bytes.Buffer{}
+	body.Write(data)
+
+	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/files/create-folder", identifier), &body)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if _, err = validate(res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type ChmodDescriptor struct {
+	Root  string `json:"root"`
+	Files []struct {
+		File string
+		Mode uint32
+	} `json:"files"`
+}
+
+func (c *Client) ChmodServerFiles(identifier string, files ChmodDescriptor) error {
+	data, _ := json.Marshal(files)
+	body := bytes.Buffer{}
+	body.Write(data)
+
+	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/files/chmod", identifier), &body)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if _, err = validate(res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type PullDescriptor struct {
+	URL        string
+	Directory  string
+	Filename   string
+	UseHeader  bool
+	Foreground bool
+}
+
+func (c *Client) PullServerFile(identifier string, file PullDescriptor) error {
+	data, _ := json.Marshal(file)
+	body := bytes.Buffer{}
+	body.Write(data)
+
+	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/files/pull", identifier), &body)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if _, err = validate(res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type Upload struct {
+	client *Client
+	url    string
+	Path   string
+}
+
+func (u *Upload) Client() *Client {
+	return u.client
+}
+
+func (u *Upload) URL() string {
+	return u.url
+}
+
+func (u *Upload) Execute() error {
+	if u.Path == "" {
+		return errors.New("no file path has been specified")
+	}
+
+	info, err := os.Stat(u.Path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return errors.New("file path does not exist")
+		}
+
+		return err
+	}
+
+	if info.IsDir() {
+		return errors.New("path must go to a file not a directory")
+	}
+
+	file, err := os.Open(u.Path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	body := bytes.Buffer{}
+	writer := multipart.NewWriter(&body)
+	part, _ := writer.CreateFormFile("files", info.Name())
+	io.Copy(part, file)
+	writer.Close()
+
+	res, err := u.client.Http.Post(u.URL(), writer.FormDataContentType(), &body)
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode != 200 {
+		return fmt.Errorf("recieved an unexpected response: %s", res.Status)
+	}
+
+	return nil
+}
+
+func (c *Client) UploadServerFile(identifier, path string) (*Upload, error) {
+	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files/upload", identifier), nil)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	buf, err := validate(res)
+	if err != nil {
+		return nil, err
+	}
+
+	var model *struct {
+		Attributes struct {
+			URL string `json:"url"`
+		} `json:"attributes"`
+	}
+	if err = json.Unmarshal(buf, &model); err != nil {
+		return nil, err
+	}
+
+	up := Upload{client: c, url: model.Attributes.URL}
+	return &up, nil
 }
