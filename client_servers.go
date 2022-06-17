@@ -195,3 +195,106 @@ func (c *Client) SetServerPowerState(identifier, state string) error {
 
 	return nil
 }
+
+type ClientDatabase struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Host     struct {
+		Address string `json:"address"`
+		Port    int64  `json:"port"`
+	} `json:"host"`
+	ConnectionsFrom string `json:"connections_from"`
+	MaxConnections  int    `json:"max_connections"`
+}
+
+func (c *Client) ServerDatabases(identifier string) ([]ClientDatabase, error) {
+	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/command", identifier), nil)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	buf, err := validate(res)
+	if err != nil {
+		return nil, err
+	}
+
+	var model *struct {
+		Data []struct {
+			Attributes ClientDatabase `json:"attributes"`
+		} `json:"data"`
+	}
+	if err = json.Unmarshal(buf, &model); err != nil {
+		return nil, err
+	}
+
+	dbs := make([]ClientDatabase, 0, len(model.Data))
+	for _, d := range model.Data {
+		dbs = append(dbs, d.Attributes)
+	}
+
+	return dbs, nil
+}
+
+func (c *Client) CreateDatabase(identifier, remote, database string) (*ClientDatabase, error) {
+	data, _ := json.Marshal(map[string]string{"remote": remote, "database": database})
+	body := bytes.Buffer{}
+	body.Write(data)
+
+	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/databases", identifier), &body)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	buf, err := validate(res)
+	if err != nil {
+		return nil, err
+	}
+
+	var model *struct {
+		Attributes ClientDatabase `json:"attributes"`
+	}
+	if err = json.Unmarshal(buf, &model); err != nil {
+		return nil, err
+	}
+
+	return &model.Attributes, nil
+}
+
+func (c *Client) RotateDatabasePassword(identifier, id string) (*ClientDatabase, error) {
+	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/databases/%s/rotate-password", identifier, id), nil)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	buf, err := validate(res)
+	if err != nil {
+		return nil, err
+	}
+
+	var model *struct {
+		Attributes ClientDatabase `json:"attributes"`
+	}
+	if err = json.Unmarshal(buf, &model); err != nil {
+		return nil, err
+	}
+
+	return &model.Attributes, nil
+}
+
+func (c *Client) DeleteDatabase(identifier, id string) error {
+	req := c.newRequest("DELETE", fmt.Sprintf("/servers/%s/databases/%s", identifier, id), nil)
+	res, err := c.Http.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if _, err = validate(res); err != nil {
+		return err
+	}
+
+	return nil
+}
