@@ -32,7 +32,7 @@ func (c *Client) Account() (*Account, error) {
 		return nil, err
 	}
 
-	var model *struct {
+	var model struct {
 		Attributes Account `json:"attributes"`
 	}
 	if err = json.Unmarshal(buf, &model); err != nil {
@@ -54,7 +54,7 @@ func (c *Client) TwoFactor() (string, error) {
 		return "", err
 	}
 
-	var model *struct {
+	var model struct {
 		Data struct {
 			URL string `json:"image_url_data"`
 		} `json:"data"`
@@ -82,7 +82,7 @@ func (c *Client) EnableTwoFactor(code int) ([]string, error) {
 		return nil, err
 	}
 
-	var model *struct {
+	var model struct {
 		Attributes struct {
 			Tokens []string `json:"tokens"`
 		} `json:"attributes"`
@@ -105,11 +105,8 @@ func (c *Client) DisableTwoFactor(password string) error {
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
 func (c *Client) UpdateEmail(email, password string) error {
@@ -123,11 +120,8 @@ func (c *Client) UpdateEmail(email, password string) error {
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
 func (c *Client) UpdatePassword(old, new string) error {
@@ -145,11 +139,8 @@ func (c *Client) UpdatePassword(old, new string) error {
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
 type ApiKey struct {
@@ -172,7 +163,7 @@ func (c *Client) ApiKeys() ([]ApiKey, error) {
 		return nil, err
 	}
 
-	var model *struct {
+	var model struct {
 		Data []struct {
 			Attributes ApiKey `json:"attributes"`
 		} `json:"data"`
@@ -208,7 +199,7 @@ func (c *Client) CreateKey(description string, ips []string) (*ApiKey, error) {
 		return nil, err
 	}
 
-	var model *struct {
+	var model struct {
 		Attributes ApiKey `json:"attributes"`
 	}
 	if err = json.Unmarshal(buf, &model); err != nil {
@@ -225,9 +216,6 @@ func (c *Client) DeleteKey(identifier string) error {
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }

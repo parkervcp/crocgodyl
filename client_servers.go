@@ -64,7 +64,7 @@ func (c *Client) Servers() ([]ClientServer, error) {
 		return nil, err
 	}
 
-	var model *struct {
+	var model struct {
 		Data []struct {
 			Attributes ClientServer `json:"attributes"`
 		} `json:"data"`
@@ -93,7 +93,7 @@ func (c *Client) Server(identifier string) (*ClientServer, error) {
 		return nil, err
 	}
 
-	var model *struct {
+	var model struct {
 		Attributes ClientServer `json:"attributes"`
 	}
 	if err = json.Unmarshal(buf, &model); err != nil {
@@ -120,7 +120,7 @@ func (c *Client) ServerWebSocket(identifier string) (*WebSocketAuth, error) {
 		return nil, err
 	}
 
-	var model *struct {
+	var model struct {
 		Data WebSocketAuth `json:"data"`
 	}
 	if err = json.Unmarshal(buf, &model); err != nil {
@@ -157,7 +157,7 @@ func (c *Client) ServerStatistics(identifier string) (*Stats, error) {
 		return nil, err
 	}
 
-	var model *struct {
+	var model struct {
 		Attributes Stats `json:"attributes"`
 	}
 	if err = json.Unmarshal(buf, &model); err != nil {
@@ -178,11 +178,8 @@ func (c *Client) SendServerCommand(identifier, command string) error {
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
 func (c *Client) SetServerPowerState(identifier, state string) error {
@@ -196,11 +193,8 @@ func (c *Client) SetServerPowerState(identifier, state string) error {
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
 type ClientDatabase struct {
@@ -227,7 +221,7 @@ func (c *Client) ServerDatabases(identifier string) ([]ClientDatabase, error) {
 		return nil, err
 	}
 
-	var model *struct {
+	var model struct {
 		Data []struct {
 			Attributes ClientDatabase `json:"attributes"`
 		} `json:"data"`
@@ -260,7 +254,7 @@ func (c *Client) CreateDatabase(identifier, remote, database string) (*ClientDat
 		return nil, err
 	}
 
-	var model *struct {
+	var model struct {
 		Attributes ClientDatabase `json:"attributes"`
 	}
 	if err = json.Unmarshal(buf, &model); err != nil {
@@ -282,7 +276,7 @@ func (c *Client) RotateDatabasePassword(identifier, id string) (*ClientDatabase,
 		return nil, err
 	}
 
-	var model *struct {
+	var model struct {
 		Attributes ClientDatabase `json:"attributes"`
 	}
 	if err = json.Unmarshal(buf, &model); err != nil {
@@ -299,11 +293,8 @@ func (c *Client) DeleteDatabase(identifier, id string) error {
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
 type File struct {
@@ -330,7 +321,7 @@ func (c *Client) ServerFiles(identififer, root string) ([]File, error) {
 		return nil, err
 	}
 
-	var model *struct {
+	var model struct {
 		Data []struct {
 			Attributes File `json:"attributes"`
 		} `json:"data"`
@@ -359,22 +350,22 @@ func (c *Client) ServerFileContents(identifier, file string) ([]byte, error) {
 	return validate(res)
 }
 
-type Download struct {
+type Downloader struct {
 	client *Client
 	Name   string
 	Path   string
 	url    string
 }
 
-func (d *Download) Client() *Client {
+func (d *Downloader) Client() *Client {
 	return d.client
 }
 
-func (d *Download) URL() string {
+func (d *Downloader) URL() string {
 	return d.url
 }
 
-func (d *Download) Execute() error {
+func (d *Downloader) Execute() error {
 	info, err := os.Stat(d.Path)
 	if err == nil {
 		if !info.IsDir() {
@@ -401,7 +392,7 @@ func (d *Download) Execute() error {
 	return nil
 }
 
-func (c *Client) DownloadServerFile(identifier, file string) (*Download, error) {
+func (c *Client) DownloadServerFile(identifier, file string) (*Downloader, error) {
 	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files/download?file=%s", identifier, file), nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -413,7 +404,7 @@ func (c *Client) DownloadServerFile(identifier, file string) (*Download, error) 
 		return nil, err
 	}
 
-	var model *struct {
+	var model struct {
 		Attributes struct {
 			URL string `json:"url"`
 		} `json:"attributes"`
@@ -424,14 +415,14 @@ func (c *Client) DownloadServerFile(identifier, file string) (*Download, error) 
 
 	_, name := filepath.Split(file)
 	path, _ := url.PathUnescape(file)
-	dl := Download{
+	dl := &Downloader{
 		client: c,
 		Name:   name,
 		Path:   path,
 		url:    model.Attributes.URL,
 	}
 
-	return &dl, nil
+	return dl, nil
 }
 
 type RenameDescriptor struct {
@@ -453,11 +444,8 @@ func (c *Client) RenameServerFiles(identifier string, files RenameDescriptor) er
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
 func (c *Client) CopyServerFile(identifier, file, location string) error {
@@ -467,14 +455,11 @@ func (c *Client) CopyServerFile(identifier, file, location string) error {
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
-func (c *Client) WriteServerFileBuffer(identifier, name, header string, content []byte) error {
+func (c *Client) WriteServerFileBytes(identifier, name, header string, content []byte) error {
 	body := bytes.Buffer{}
 	body.Write(content)
 
@@ -485,15 +470,12 @@ func (c *Client) WriteServerFileBuffer(identifier, name, header string, content 
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
 func (c *Client) WriteServerFile(identifier, name, content string) error {
-	return c.WriteServerFileBuffer(identifier, name, "text/plain", []byte(content))
+	return c.WriteServerFileBytes(identifier, name, "text/plain", []byte(content))
 }
 
 type CompressDescriptor struct {
@@ -512,11 +494,8 @@ func (c *Client) CompressServerFiles(identifier string, files CompressDescriptor
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
 type DecompressDescriptor struct {
@@ -535,11 +514,8 @@ func (c *Client) DecompressServerFile(identifier string, file DecompressDescript
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
 type DeleteFilesDescriptor struct {
@@ -558,11 +534,8 @@ func (c *Client) DeleteServerFiles(identifier string, files DeleteFilesDescripto
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
 type CreateFolderDescriptor struct {
@@ -581,18 +554,15 @@ func (c *Client) CreateServerFileFolder(identifier string, file CreateFolderDesc
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
 type ChmodDescriptor struct {
 	Root  string `json:"root"`
 	Files []struct {
-		File string
-		Mode uint32
+		File string `json:"file"`
+		Mode uint32 `json:"mode"`
 	} `json:"files"`
 }
 
@@ -607,19 +577,16 @@ func (c *Client) ChmodServerFiles(identifier string, files ChmodDescriptor) erro
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
 type PullDescriptor struct {
-	URL        string
-	Directory  string
-	Filename   string
-	UseHeader  bool
-	Foreground bool
+	URL        string `json:"url"`
+	Directory  string `json:"directory,omitempty"`
+	Filename   string `json:"filename,omitempty"`
+	UseHeader  bool   `json:"use_header,omitempty"`
+	Foreground bool   `json:"foreground,omitempty"`
 }
 
 func (c *Client) PullServerFile(identifier string, file PullDescriptor) error {
@@ -633,28 +600,25 @@ func (c *Client) PullServerFile(identifier string, file PullDescriptor) error {
 		return err
 	}
 
-	if _, err = validate(res); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = validate(res)
+	return err
 }
 
-type Upload struct {
+type Uploader struct {
 	client *Client
 	url    string
 	Path   string
 }
 
-func (u *Upload) Client() *Client {
+func (u *Uploader) Client() *Client {
 	return u.client
 }
 
-func (u *Upload) URL() string {
+func (u *Uploader) URL() string {
 	return u.url
 }
 
-func (u *Upload) Execute() error {
+func (u *Uploader) Execute() error {
 	if u.Path == "" {
 		return errors.New("no file path has been specified")
 	}
@@ -696,7 +660,7 @@ func (u *Upload) Execute() error {
 	return nil
 }
 
-func (c *Client) UploadServerFile(identifier, path string) (*Upload, error) {
+func (c *Client) UploadServerFile(identifier, path string) (*Uploader, error) {
 	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files/upload", identifier), nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -708,7 +672,7 @@ func (c *Client) UploadServerFile(identifier, path string) (*Upload, error) {
 		return nil, err
 	}
 
-	var model *struct {
+	var model struct {
 		Attributes struct {
 			URL string `json:"url"`
 		} `json:"attributes"`
@@ -717,6 +681,6 @@ func (c *Client) UploadServerFile(identifier, path string) (*Upload, error) {
 		return nil, err
 	}
 
-	up := Upload{client: c, url: model.Attributes.URL}
-	return &up, nil
+	up := &Uploader{client: c, url: model.Attributes.URL}
+	return up, nil
 }
