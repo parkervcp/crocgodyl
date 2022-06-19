@@ -298,15 +298,15 @@ func (c *Client) DeleteDatabase(identifier, id string) error {
 }
 
 type File struct {
-	Name       string    `json:"name"`
-	Mode       string    `json:"mode"`
-	ModeBits   uint      `json:"mode_bits"`
-	Size       int64     `json:"size"`
-	IsFile     bool      `json:"is_file"`
-	IsSymlink  bool      `json:"is_symlink"`
-	MimeType   string    `json:"mime_type"`
-	CreatedAt  time.Time `json:"created_at"`
-	ModifiedAt time.Time `json:"modified_at,omitempty"`
+	Name       string     `json:"name"`
+	Mode       string     `json:"mode"`
+	ModeBits   uint       `json:"mode_bits"`
+	Size       int64      `json:"size"`
+	IsFile     bool       `json:"is_file"`
+	IsSymlink  bool       `json:"is_symlink"`
+	MimeType   string     `json:"mime_type"`
+	CreatedAt  *time.Time `json:"created_at"`
+	ModifiedAt *time.Time `json:"modified_at,omitempty"`
 }
 
 func (c *Client) ServerFiles(identififer, root string) ([]*File, error) {

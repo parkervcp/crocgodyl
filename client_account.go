@@ -144,11 +144,11 @@ func (c *Client) UpdatePassword(old, new string) error {
 }
 
 type ApiKey struct {
-	Identifier  string    `json:"identifier"`
-	Description string    `json:"description"`
-	AllowedIPs  []string  `json:"allowed_ips"`
-	CreatedAt   time.Time `json:"created_at"`
-	LastUsedAt  time.Time `json:"last_used_at"`
+	Identifier  string     `json:"identifier"`
+	Description string     `json:"description"`
+	AllowedIPs  []string   `json:"allowed_ips"`
+	CreatedAt   *time.Time `json:"created_at"`
+	LastUsedAt  *time.Time `json:"last_used_at,omitempty"`
 }
 
 func (c *Client) ApiKeys() ([]*ApiKey, error) {
