@@ -141,7 +141,7 @@ type NodeConfiguration struct {
 		SFTP struct {
 			BindPort int32 `json:"bind_port"`
 		} `json:"sftp"`
-	}
+	} `json:"system"`
 	AllowedMounts []string `json:"allowed_mounts"`
 	Remote        string   `json:"remote"`
 }
