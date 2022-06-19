@@ -42,10 +42,10 @@ func NewApp(url, key string) (*Application, error) {
 func (a *Application) newRequest(method, path string, body io.Reader) *http.Request {
 	req, _ := http.NewRequest(method, fmt.Sprintf("%s/api/application%s", a.PanelURL, path), body)
 
-	req.Header.Add("User-Agent", "Crocgodyl v"+Version)
-	req.Header.Add("Authorization", "Bearer "+a.ApiKey)
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
+	req.Header.Set("User-Agent", "Crocgodyl v"+Version)
+	req.Header.Set("Authorization", "Bearer "+a.ApiKey)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	return req
 }
@@ -70,10 +70,10 @@ func NewClient(url, key string) (*Client, error) {
 func (a *Client) newRequest(method, path string, body io.Reader) *http.Request {
 	req, _ := http.NewRequest(method, fmt.Sprintf("%s/api/client%s", a.PanelURL, path), body)
 
-	req.Header.Add("User-Agent", "Crocgodyl v"+Version)
-	req.Header.Add("Authorization", "Bearer "+a.ApiKey)
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
+	req.Header.Set("User-Agent", "Crocgodyl v"+Version)
+	req.Header.Set("Authorization", "Bearer "+a.ApiKey)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	return req
 }
@@ -102,13 +102,13 @@ func validate(res *http.Response) ([]byte, error) {
 		defer res.Body.Close()
 		buf, _ := io.ReadAll(res.Body)
 
-		var errs *struct {
-			Errors []ApiError
+		var errs struct {
+			Errors []*ApiError
 		}
-		if err := json.Unmarshal(buf, errs); err != nil {
+		if err := json.Unmarshal(buf, &errs); err != nil {
 			return nil, err
 		}
 
-		return nil, &errs.Errors[0]
+		return nil, errs.Errors[0]
 	}
 }

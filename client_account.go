@@ -151,7 +151,7 @@ type ApiKey struct {
 	LastUsedAt  time.Time `json:"last_used_at"`
 }
 
-func (c *Client) ApiKeys() ([]ApiKey, error) {
+func (c *Client) ApiKeys() ([]*ApiKey, error) {
 	req := c.newRequest("GET", "/account/api-keys", nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -165,14 +165,14 @@ func (c *Client) ApiKeys() ([]ApiKey, error) {
 
 	var model struct {
 		Data []struct {
-			Attributes ApiKey `json:"attributes"`
+			Attributes *ApiKey `json:"attributes"`
 		} `json:"data"`
 	}
 	if err = json.Unmarshal(buf, &model); err != nil {
 		return nil, err
 	}
 
-	keys := make([]ApiKey, 0, len(model.Data))
+	keys := make([]*ApiKey, 0, len(model.Data))
 	for _, k := range model.Data {
 		keys = append(keys, k.Attributes)
 	}

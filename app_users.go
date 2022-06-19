@@ -55,7 +55,7 @@ func (a *Application) Users() ([]*User, error) {
 	return users, nil
 }
 
-func (a *Application) User(id int64) (*User, error) {
+func (a *Application) User(id int) (*User, error) {
 	req := a.newRequest("GET", fmt.Sprintf("/users/%d", id), nil)
 	res, err := a.Http.Do(req)
 	if err != nil {
@@ -147,7 +147,7 @@ type UpdateUserDescriptor struct {
 	RootAdmin  bool   `json:"root_admin,omitempty"`
 }
 
-func (a *Application) UpdateUser(id int64, fields UpdateUserDescriptor) (*User, error) {
+func (a *Application) UpdateUser(id int, fields UpdateUserDescriptor) (*User, error) {
 	data, _ := json.Marshal(fields)
 	body := bytes.Buffer{}
 	body.Write(data)
@@ -173,7 +173,7 @@ func (a *Application) UpdateUser(id int64, fields UpdateUserDescriptor) (*User, 
 	return &model.Attributes, nil
 }
 
-func (a *Application) DeleteUser(id int64) error {
+func (a *Application) DeleteUser(id int) error {
 	req := a.newRequest("DELETE", fmt.Sprintf("/users/%d", id), nil)
 	res, err := a.Http.Do(req)
 	if err != nil {

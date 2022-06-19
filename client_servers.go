@@ -52,7 +52,7 @@ type ClientServer struct {
 	Transferring  bool          `json:"is_transferring"`
 }
 
-func (c *Client) Servers() ([]ClientServer, error) {
+func (c *Client) Servers() ([]*ClientServer, error) {
 	req := c.newRequest("GET", "", nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -66,14 +66,14 @@ func (c *Client) Servers() ([]ClientServer, error) {
 
 	var model struct {
 		Data []struct {
-			Attributes ClientServer `json:"attributes"`
+			Attributes *ClientServer `json:"attributes"`
 		} `json:"data"`
 	}
 	if err = json.Unmarshal(buf, &model); err != nil {
 		return nil, err
 	}
 
-	servers := make([]ClientServer, 0, len(model.Data))
+	servers := make([]*ClientServer, 0, len(model.Data))
 	for _, s := range model.Data {
 		servers = append(servers, s.Attributes)
 	}
@@ -209,7 +209,7 @@ type ClientDatabase struct {
 	MaxConnections  int    `json:"max_connections"`
 }
 
-func (c *Client) ServerDatabases(identifier string) ([]ClientDatabase, error) {
+func (c *Client) ServerDatabases(identifier string) ([]*ClientDatabase, error) {
 	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/command", identifier), nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -223,14 +223,14 @@ func (c *Client) ServerDatabases(identifier string) ([]ClientDatabase, error) {
 
 	var model struct {
 		Data []struct {
-			Attributes ClientDatabase `json:"attributes"`
+			Attributes *ClientDatabase `json:"attributes"`
 		} `json:"data"`
 	}
 	if err = json.Unmarshal(buf, &model); err != nil {
 		return nil, err
 	}
 
-	dbs := make([]ClientDatabase, 0, len(model.Data))
+	dbs := make([]*ClientDatabase, 0, len(model.Data))
 	for _, d := range model.Data {
 		dbs = append(dbs, d.Attributes)
 	}
@@ -309,7 +309,7 @@ type File struct {
 	ModifiedAt time.Time `json:"modified_at,omitempty"`
 }
 
-func (c *Client) ServerFiles(identififer, root string) ([]File, error) {
+func (c *Client) ServerFiles(identififer, root string) ([]*File, error) {
 	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files?directory=%s", identififer, root), nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -323,14 +323,14 @@ func (c *Client) ServerFiles(identififer, root string) ([]File, error) {
 
 	var model struct {
 		Data []struct {
-			Attributes File `json:"attributes"`
+			Attributes *File `json:"attributes"`
 		} `json:"data"`
 	}
 	if err = json.Unmarshal(buf, &model); err != nil {
 		return nil, err
 	}
 
-	files := make([]File, 0, len(model.Data))
+	files := make([]*File, 0, len(model.Data))
 	for _, f := range model.Data {
 		files = append(files, f.Attributes)
 	}
