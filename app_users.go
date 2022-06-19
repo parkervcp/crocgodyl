@@ -8,7 +8,7 @@ import (
 )
 
 type User struct {
-	ID         int64      `json:"id"`
+	ID         int        `json:"id"`
 	ExternalID string     `json:"external_id"`
 	UUID       string     `json:"uuid"`
 	Username   string     `json:"username"`

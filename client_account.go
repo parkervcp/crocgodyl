@@ -7,7 +7,7 @@ import (
 )
 
 type Account struct {
-	ID        int64  `json:"id"`
+	ID        int    `json:"id"`
 	Admin     bool   `json:"admin"`
 	Username  string `json:"username"`
 	Email     string `json:"email"`
