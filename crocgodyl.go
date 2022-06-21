@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-const Version = "0.0.3"
+const Version = "1.0.0"
 
 type Application struct {
 	PanelURL string
@@ -30,13 +30,13 @@ func NewApp(url, key string) (*Application, error) {
 		return nil, errors.New("a valid application api key is required")
 	}
 
-	app := Application{
+	app := &Application{
 		PanelURL: url,
 		ApiKey:   key,
 		Http:     &http.Client{},
 	}
 
-	return &app, nil
+	return app, nil
 }
 
 func (a *Application) newRequest(method, path string, body io.Reader) *http.Request {
@@ -58,13 +58,13 @@ func NewClient(url, key string) (*Client, error) {
 		return nil, errors.New("a valid client api key is required")
 	}
 
-	client := Client{
+	client := &Client{
 		PanelURL: url,
 		ApiKey:   key,
 		Http:     &http.Client{},
 	}
 
-	return &client, nil
+	return client, nil
 }
 
 func (a *Client) newRequest(method, path string, body io.Reader) *http.Request {
@@ -83,10 +83,10 @@ func validate(res *http.Response) ([]byte, error) {
 	case http.StatusOK:
 		fallthrough
 
-	case http.StatusAccepted:
+	case http.StatusCreated:
 		fallthrough
 
-	case http.StatusCreated:
+	case http.StatusAccepted:
 		defer res.Body.Close()
 		buf, _ := io.ReadAll(res.Body)
 		return buf, nil
