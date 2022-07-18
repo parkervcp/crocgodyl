@@ -304,7 +304,7 @@ type File struct {
 	Size       int64      `json:"size"`
 	IsFile     bool       `json:"is_file"`
 	IsSymlink  bool       `json:"is_symlink"`
-	MimeType   string     `json:"mime_type"`
+	MimeType   string     `json:"mimetype"`
 	CreatedAt  *time.Time `json:"created_at"`
 	ModifiedAt *time.Time `json:"modified_at,omitempty"`
 }
@@ -393,6 +393,22 @@ func (d *Downloader) Execute() error {
 }
 
 func (c *Client) DownloadServerFile(identifier, file string) (*Downloader, error) {
+	files, err := c.ServerFiles(identifier, "/")
+	if err != nil {
+		return nil, err
+	}
+
+	_, name := filepath.Split(file)
+	for _, f := range files {
+		if f.Name == name {
+			if f.MimeType == "inode/directory" {
+				return nil, errors.New("cannot download a directory")
+			}
+
+			break
+		}
+	}
+
 	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files/download?file=%s", identifier, file), nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -413,7 +429,6 @@ func (c *Client) DownloadServerFile(identifier, file string) (*Downloader, error
 		return nil, err
 	}
 
-	_, name := filepath.Split(file)
 	path, _ := url.PathUnescape(file)
 	dl := &Downloader{
 		client: c,
