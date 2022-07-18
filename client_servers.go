@@ -448,8 +448,12 @@ func (c *Client) RenameServerFiles(identifier string, files RenameDescriptor) er
 	return err
 }
 
-func (c *Client) CopyServerFile(identifier, file, location string) error {
-	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/files/copy?file=%s", identifier, file), nil)
+func (c *Client) CopyServerFile(identifier, location string) error {
+	data, _ := json.Marshal(map[string]string{"location": location})
+	body := bytes.Buffer{}
+	body.Write(data)
+
+	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/files/copy", identifier), &body)
 	res, err := c.Http.Do(req)
 	if err != nil {
 		return err
