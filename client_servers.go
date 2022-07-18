@@ -373,11 +373,6 @@ func (d *Downloader) Execute() error {
 		}
 	}
 
-	file, err := os.OpenFile(d.Name, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0o644)
-	if err != nil {
-		return err
-	}
-
 	res, err := d.client.Http.Get(d.URL())
 	if err != nil {
 		return err
@@ -385,6 +380,11 @@ func (d *Downloader) Execute() error {
 
 	if res.StatusCode != 200 {
 		return fmt.Errorf("recieved an unexpected response: %s", res.Status)
+	}
+
+	file, err := os.OpenFile(d.Name, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0o644)
+	if err != nil {
+		return err
 	}
 
 	defer res.Body.Close()
