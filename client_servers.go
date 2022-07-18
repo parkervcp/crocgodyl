@@ -300,7 +300,7 @@ func (c *Client) DeleteDatabase(identifier, id string) error {
 type File struct {
 	Name       string     `json:"name"`
 	Mode       string     `json:"mode"`
-	ModeBits   uint       `json:"mode_bits"`
+	ModeBits   string     `json:"mode_bits"`
 	Size       int64      `json:"size"`
 	IsFile     bool       `json:"is_file"`
 	IsSymlink  bool       `json:"is_symlink"`
@@ -310,7 +310,7 @@ type File struct {
 }
 
 func (c *Client) ServerFiles(identififer, root string) ([]*File, error) {
-	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files?directory=%s", identififer, root), nil)
+	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files/list?directory=%s", identififer, root), nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
 		return nil, err
