@@ -52,7 +52,7 @@ type ClientServer struct {
 	Transferring  bool          `json:"is_transferring"`
 }
 
-func (c *Client) Servers() ([]*ClientServer, error) {
+func (c *Client) GetServers() ([]*ClientServer, error) {
 	req := c.newRequest("GET", "", nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -81,7 +81,7 @@ func (c *Client) Servers() ([]*ClientServer, error) {
 	return servers, nil
 }
 
-func (c *Client) Server(identifier string) (*ClientServer, error) {
+func (c *Client) GetServer(identifier string) (*ClientServer, error) {
 	req := c.newRequest("GET", "/servers/"+identifier, nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -108,7 +108,7 @@ type WebSocketAuth struct {
 	Token  string `json:"token"`
 }
 
-func (c *Client) ServerWebSocket(identifier string) (*WebSocketAuth, error) {
+func (c *Client) GetServerWebSocket(identifier string) (*WebSocketAuth, error) {
 	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/websocket", identifier), nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -209,7 +209,7 @@ type ClientDatabase struct {
 	MaxConnections  int    `json:"max_connections"`
 }
 
-func (c *Client) ServerDatabases(identifier string) ([]*ClientDatabase, error) {
+func (c *Client) GetServerDatabases(identifier string) ([]*ClientDatabase, error) {
 	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/command", identifier), nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -309,7 +309,7 @@ type File struct {
 	ModifiedAt *time.Time `json:"modified_at,omitempty"`
 }
 
-func (c *Client) ServerFiles(identififer, root string) ([]*File, error) {
+func (c *Client) GetServerFiles(identififer, root string) ([]*File, error) {
 	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files/list?directory=%s", identififer, root), nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -338,7 +338,7 @@ func (c *Client) ServerFiles(identififer, root string) ([]*File, error) {
 	return files, nil
 }
 
-func (c *Client) ServerFileContents(identifier, file string) ([]byte, error) {
+func (c *Client) GetServerFileContents(identifier, file string) ([]byte, error) {
 	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files/contents?file=%s", identifier, url.PathEscape(file)), nil)
 	req.Header.Set("Accept", "application/json,text/plain")
 
@@ -393,7 +393,7 @@ func (d *Downloader) Execute() error {
 }
 
 func (c *Client) DownloadServerFile(identifier, file string) (*Downloader, error) {
-	files, err := c.ServerFiles(identifier, "/")
+	files, err := c.GetServerFiles(identifier, "/")
 	if err != nil {
 		return nil, err
 	}

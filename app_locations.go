@@ -15,7 +15,7 @@ type Location struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
-func (a *Application) Locations() ([]*Location, error) {
+func (a *Application) GetLocations() ([]*Location, error) {
 	req := a.newRequest("GET", "/locations", nil)
 	res, err := a.Http.Do(req)
 	if err != nil {
@@ -44,7 +44,7 @@ func (a *Application) Locations() ([]*Location, error) {
 	return locs, nil
 }
 
-func (a *Application) Location(id int) (*Location, error) {
+func (a *Application) GetLocation(id int) (*Location, error) {
 	req := a.newRequest("GET", fmt.Sprintf("/locations/%d", id), nil)
 	res, err := a.Http.Do(req)
 	if err != nil {

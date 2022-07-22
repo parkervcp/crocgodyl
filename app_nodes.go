@@ -30,7 +30,7 @@ type Node struct {
 	UpdatedAt          *time.Time `json:"updated_at,omitempty"`
 }
 
-func (a *Application) Nodes() ([]*Node, error) {
+func (a *Application) GetNodes() ([]*Node, error) {
 	req := a.newRequest("GET", "/nodes", nil)
 	res, err := a.Http.Do(req)
 	if err != nil {
@@ -59,7 +59,7 @@ func (a *Application) Nodes() ([]*Node, error) {
 	return nodes, nil
 }
 
-func (a *Application) Node(id int) (*Node, error) {
+func (a *Application) GetNode(id int) (*Node, error) {
 	req := a.newRequest("GET", fmt.Sprintf("/nodes/%d", id), nil)
 	res, err := a.Http.Do(req)
 	if err != nil {
@@ -88,7 +88,7 @@ type DeployableNodesDescriptor struct {
 	LocationsIDs []int `json:"location_ids,omitempty"`
 }
 
-func (a *Application) DeployableNodes(fields DeployableNodesDescriptor) ([]*Node, error) {
+func (a *Application) GetDeployableNodes(fields DeployableNodesDescriptor) ([]*Node, error) {
 	data, _ := json.Marshal(fields)
 	body := bytes.Buffer{}
 	body.Write(data)
@@ -146,7 +146,7 @@ type NodeConfiguration struct {
 	Remote        string   `json:"remote"`
 }
 
-func (a *Application) NodeConfiguration(id int) (*NodeConfiguration, error) {
+func (a *Application) GetNodeConfiguration(id int) (*NodeConfiguration, error) {
 	req := a.newRequest("GET", fmt.Sprintf("/nodes/%d/configuration", id), nil)
 	res, err := a.Http.Do(req)
 	if err != nil {
@@ -278,7 +278,7 @@ type Allocation struct {
 	Assigned bool   `json:"assigned"`
 }
 
-func (a *Application) NodeAllocations(node int) ([]*Allocation, error) {
+func (a *Application) GetNodeAllocations(node int) ([]*Allocation, error) {
 	req := a.newRequest("GET", fmt.Sprintf("/nodes/%d/allocations", node), nil)
 	res, err := a.Http.Do(req)
 	if err != nil {

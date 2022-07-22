@@ -34,7 +34,7 @@ type AppServer struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
-func (a *Application) Servers() ([]*AppServer, error) {
+func (a *Application) GetServers() ([]*AppServer, error) {
 	req := a.newRequest("GET", "/servers", nil)
 	res, err := a.Http.Do(req)
 	if err != nil {
@@ -63,7 +63,7 @@ func (a *Application) Servers() ([]*AppServer, error) {
 	return servers, nil
 }
 
-func (a *Application) Server(id int) (*AppServer, error) {
+func (a *Application) GetServer(id int) (*AppServer, error) {
 	req := a.newRequest("GET", fmt.Sprintf("/servers/%d", id), nil)
 	res, err := a.Http.Do(req)
 	if err != nil {
@@ -85,7 +85,7 @@ func (a *Application) Server(id int) (*AppServer, error) {
 	return &model.Attributes, nil
 }
 
-func (a *Application) ServerExternal(id string) (*AppServer, error) {
+func (a *Application) GetServerExternal(id string) (*AppServer, error) {
 	req := a.newRequest("GET", fmt.Sprintf("/servers/external/%s", id), nil)
 	res, err := a.Http.Do(req)
 	if err != nil {

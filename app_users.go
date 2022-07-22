@@ -26,7 +26,7 @@ func (u *User) FullName() string {
 	return u.FirstName + " " + u.LastName
 }
 
-func (a *Application) Users() ([]*User, error) {
+func (a *Application) GetUsers() ([]*User, error) {
 	req := a.newRequest("GET", "/users", nil)
 	res, err := a.Http.Do(req)
 	if err != nil {
@@ -55,7 +55,7 @@ func (a *Application) Users() ([]*User, error) {
 	return users, nil
 }
 
-func (a *Application) User(id int) (*User, error) {
+func (a *Application) GetUser(id int) (*User, error) {
 	req := a.newRequest("GET", fmt.Sprintf("/users/%d", id), nil)
 	res, err := a.Http.Do(req)
 	if err != nil {
@@ -77,7 +77,7 @@ func (a *Application) User(id int) (*User, error) {
 	return &model.Attributes, nil
 }
 
-func (a *Application) UserExternal(id string) (*User, error) {
+func (a *Application) GetUserExternal(id string) (*User, error) {
 	req := a.newRequest("GET", fmt.Sprintf("/users/external/%s", id), nil)
 	res, err := a.Http.Do(req)
 	if err != nil {

@@ -20,7 +20,7 @@ func (a *Account) FullName() string {
 	return a.FirstName + " " + a.LastName
 }
 
-func (c *Client) Account() (*Account, error) {
+func (c *Client) GetAccount() (*Account, error) {
 	req := c.newRequest("GET", "/account", nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -42,7 +42,7 @@ func (c *Client) Account() (*Account, error) {
 	return &model.Attributes, nil
 }
 
-func (c *Client) TwoFactor() (string, error) {
+func (c *Client) GetTwoFactor() (string, error) {
 	req := c.newRequest("GET", "/account/two-factor", nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -151,7 +151,7 @@ type ApiKey struct {
 	LastUsedAt  *time.Time `json:"last_used_at,omitempty"`
 }
 
-func (c *Client) ApiKeys() ([]*ApiKey, error) {
+func (c *Client) GetApiKeys() ([]*ApiKey, error) {
 	req := c.newRequest("GET", "/account/api-keys", nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
