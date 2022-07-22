@@ -310,7 +310,7 @@ type File struct {
 }
 
 func (c *Client) GetServerFiles(identififer, root string) ([]*File, error) {
-	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files/list?directory=%s", identififer, root), nil)
+	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files/list?directory=%s", identififer, url.PathEscape(root)), nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
 		return nil, err
@@ -409,7 +409,7 @@ func (c *Client) DownloadServerFile(identifier, file string) (*Downloader, error
 		}
 	}
 
-	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files/download?file=%s", identifier, file), nil)
+	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/files/download?file=%s", identifier, url.PathEscape(file)), nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
 		return nil, err
@@ -482,7 +482,7 @@ func (c *Client) WriteServerFileBytes(identifier, name, header string, content [
 	body := bytes.Buffer{}
 	body.Write(content)
 
-	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/files/write?file=%s", identifier, name), &body)
+	req := c.newRequest("POST", fmt.Sprintf("/servers/%s/files/write?file=%s", identifier, url.PathEscape(name)), &body)
 	req.Header.Set("Content-Type", header)
 	res, err := c.Http.Do(req)
 	if err != nil {
