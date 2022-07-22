@@ -130,22 +130,22 @@ func (c *Client) GetServerWebSocket(identifier string) (*WebSocketAuth, error) {
 	return &model.Data, nil
 }
 
+type ResourceUsage struct {
+	MemoryBytes    int64   `json:"memory_bytes"`
+	DiskBytes      int64   `json:"disk_bytes"`
+	CPUAbsolute    float64 `json:"cpu_absolute"`
+	NetworkRxBytes int64   `json:"network_rx_bytes"`
+	NetworkTxBytes int64   `json:"network_tx_bytes"`
+	Uptime         int64   `json:"uptime"`
+}
+
 type Resources struct {
-	MemoryBytes    int64 `json:"memory_bytes"`
-	DiskBytes      int64 `json:"disk_bytes"`
-	CPUAbsolute    int64 `json:"cpu_absolute"`
-	NetworkRxBytes int64 `json:"network_rx_bytes"`
-	NetworkTxBytes int64 `json:"network_tx_bytes"`
-	Uptime         int64 `json:"uptime"`
+	State     string        `json:"current_state,omitempty"`
+	Suspended bool          `json:"is_suspended"`
+	Usage     ResourceUsage `json:"resources"`
 }
 
-type Stats struct {
-	State     string    `json:"current_state,omitempty"`
-	Suspended bool      `json:"is_suspended"`
-	Resources Resources `json:"resources"`
-}
-
-func (c *Client) ServerStatistics(identifier string) (*Stats, error) {
+func (c *Client) GetServerResources(identifier string) (*Resources, error) {
 	req := c.newRequest("GET", fmt.Sprintf("/servers/%s/resources", identifier), nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
@@ -158,7 +158,7 @@ func (c *Client) ServerStatistics(identifier string) (*Stats, error) {
 	}
 
 	var model struct {
-		Attributes Stats `json:"attributes"`
+		Attributes Resources `json:"attributes"`
 	}
 	if err = json.Unmarshal(buf, &model); err != nil {
 		return nil, err
