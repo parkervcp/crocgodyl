@@ -6,12 +6,12 @@ import (
 	croc "github.com/parkervcp/crocgodyl"
 )
 
-func main() {
+func client_test() {
 	// initialize the client
 	client, _ := croc.NewClient("https://pterodactyl.domain", "ptlc_someLongAP1ke3")
 
 	// fetches the client account
-	account, err := client.Account()
+	account, err := client.GetAccount()
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -19,7 +19,7 @@ func main() {
 	fmt.Printf("%s - %s\n", account.FullName(), account.Email)
 
 	// fetches the servers the account has access to
-	servers, err := client.Servers()
+	servers, err := client.GetServers()
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -31,7 +31,7 @@ func main() {
 	server := servers[0]
 
 	// gets the server websocket authentication details for a server
-	auth, err := client.ServerWebSocket(server.Identifier)
+	auth, err := client.GetServerWebSocket(server.Identifier)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -39,7 +39,7 @@ func main() {
 	fmt.Printf("socket: %s\ntoken: %s\n", auth.Socket, auth.Token)
 
 	// gets available api keys associated with the account
-	keys, err := client.ApiKeys()
+	keys, err := client.GetApiKeys()
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -50,7 +50,7 @@ func main() {
 	}
 
 	// gets the files in the root directory on a specified server
-	files, err := client.ServerFiles(server.Identifier, "/")
+	files, err := client.GetServerFiles(server.Identifier, "/")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
