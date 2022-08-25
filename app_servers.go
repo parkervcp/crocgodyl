@@ -107,6 +107,57 @@ func (a *Application) GetServerExternal(id string) (*AppServer, error) {
 	return &model.Attributes, nil
 }
 
+type CreateServerDescriptor struct {
+	ExternalID    string                 `json:"external_id,omitempty"`
+	Name          string                 `json:"name"`
+	Description   string                 `json:"description,omitempty"`
+	User          int                    `json:"user"`
+	Egg           int                    `json:"egg"`
+	DockerImage   string                 `json:"docker_image"`
+	Startup       string                 `json:"startup"`
+	Environment   map[string]interface{} `json:"environment"`
+	SkipScripts   bool                   `json:"skip_scripts,omitempty"`
+	OOMDisabled   bool                   `json:"oom_disabled"`
+	Limits        Limits                 `json:"limits"`
+	FeatureLimtis FeatureLimits          `json:"feature_limits"`
+	Allocation    struct {
+		Default    int   `json:"default"`
+		Additional []int `json:"additional,omitempty"`
+	} `json:"allocation,omitempty"`
+	Deploy struct {
+		Locations   []int    `json:"location"`
+		DedicatedIP bool     `json:"dedicated_ip"`
+		PortRange   []string `json:"port_range"`
+	} `json:"deploy,omitempty"`
+	StartOnCompletion bool `json:"start_on_completion,omitempty"`
+}
+
+func (a *Application) CreateServer(fields CreateServerDescriptor) (*AppServer, error) {
+	data, _ := json.Marshal(fields)
+	body := bytes.Buffer{}
+	body.Write(data)
+
+	req := a.newRequest("POST", "/servers", &body)
+	res, err := a.Http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	buf, err := validate(res)
+	if err != nil {
+		return nil, err
+	}
+
+	var model struct {
+		Attributes AppServer `json:"attributes"`
+	}
+	if err = json.Unmarshal(buf, &model); err != nil {
+		return nil, err
+	}
+
+	return &model.Attributes, nil
+}
+
 type ServerBuildDescriptor struct {
 	Allocation        int           `json:"allocation,omitempty"`
 	OOMDisabled       bool          `json:"oom_disabled,omitempty"`
