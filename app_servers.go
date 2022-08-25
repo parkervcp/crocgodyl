@@ -34,6 +34,35 @@ type AppServer struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
+func (s *AppServer) BuildDescriptor() *ServerBuildDescriptor {
+	return &ServerBuildDescriptor{
+		Allocation:        s.Allocation,
+		OOMDisabled:       s.Limits.OOMDisabled,
+		Limits:            s.Limits,
+		AddAllocations:    []int{},
+		RemoveAllocations: []int{},
+		FeatureLimits:     s.FeatureLimits,
+	}
+}
+
+func (s *AppServer) DetailsDescriptor() *ServerDetailsDescriptor {
+	return &ServerDetailsDescriptor{
+		ExternalID:  s.ExternalID,
+		Name:        s.Name,
+		User:        s.User,
+		Description: s.Description,
+	}
+}
+
+func (s *AppServer) StartupDescriptor() *ServerStartupDescriptor {
+	return &ServerStartupDescriptor{
+		Startup:     s.Container.StartupCommand,
+		Environment: s.Container.Environment,
+		Egg:         s.Egg,
+		Image:       s.Container.Image,
+	}
+}
+
 func (a *Application) GetServers() ([]*AppServer, error) {
 	req := a.newRequest("GET", "/servers", nil)
 	res, err := a.Http.Do(req)

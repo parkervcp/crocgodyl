@@ -26,6 +26,18 @@ func (u *User) FullName() string {
 	return u.FirstName + " " + u.LastName
 }
 
+func (u *User) UpdateDescriptor() *UpdateUserDescriptor {
+	return &UpdateUserDescriptor{
+		ExternalID: u.ExternalID,
+		Email:      u.Email,
+		Username:   u.Username,
+		FirstName:  u.FirstName,
+		LastName:   u.LastName,
+		Language:   u.Language,
+		RootAdmin:  u.RootAdmin,
+	}
+}
+
 func (a *Application) GetUsers() ([]*User, error) {
 	req := a.newRequest("GET", "/users", nil)
 	res, err := a.Http.Do(req)
