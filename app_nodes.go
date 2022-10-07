@@ -30,6 +30,26 @@ type Node struct {
 	UpdatedAt          *time.Time `json:"updated_at,omitempty"`
 }
 
+func (n *Node) UpdateDescriptor() *UpdateNodeDescriptor {
+	return &UpdateNodeDescriptor{
+		Name:               n.Name,
+		Description:        n.Description,
+		LocationID:         n.LocationID,
+		Public:             n.Public,
+		FQDN:               n.FQDN,
+		Scheme:             n.Scheme,
+		BehindProxy:        n.BehindProxy,
+		Memory:             n.Memory,
+		MemoryOverallocate: n.MemoryOverallocate,
+		Disk:               n.Disk,
+		DiskOverallocate:   n.DiskOverallocate,
+		DaemonBase:         n.DaemonBase,
+		DaemonSftp:         n.DaemonSftp,
+		DaemonListen:       n.DaemonListen,
+		UploadSize:         n.UploadSize,
+	}
+}
+
 func (a *Application) GetNodes() ([]*Node, error) {
 	req := a.newRequest("GET", "/nodes", nil)
 	res, err := a.Http.Do(req)
