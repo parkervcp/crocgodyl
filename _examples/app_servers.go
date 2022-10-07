@@ -26,7 +26,7 @@ func main() {
 		Deploy:        &croc.DeployDescriptor{[]int{1, 2}, false, []string{}},
 	})
 	if err != nil {
-		fmt.Println(err.Error())
+		handleError(err)
 		return
 	}
 
@@ -36,7 +36,7 @@ func main() {
 	data.ExternalID = "croc"
 	server, err = app.UpdateServerDetails(server.ID, *data)
 	if err != nil {
-		fmt.Println(err.Error())
+		handleError(err)
 		return
 	}
 
@@ -44,7 +44,7 @@ func main() {
 
 	servers, err := app.GetServers()
 	if err != nil {
-		fmt.Println(err.Error())
+		handleError(err)
 		return
 	}
 
@@ -53,6 +53,16 @@ func main() {
 	}
 
 	if err = app.DeleteServer(server.ID, false); err != nil {
+		handleError(err)
+	}
+}
+
+func handleError(err error) {
+	if errs, ok := err.(*croc.ApiError); ok {
+		for _, e := range errs.Errors {
+			fmt.Println(e.Error())
+		}
+	} else {
 		fmt.Println(err.Error())
 	}
 }

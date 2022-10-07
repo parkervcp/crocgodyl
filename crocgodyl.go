@@ -98,13 +98,11 @@ func validate(res *http.Response) ([]byte, error) {
 		defer res.Body.Close()
 		buf, _ := io.ReadAll(res.Body)
 
-		var errs struct {
-			Errors []*ApiError
-		}
+		var errs *ApiError
 		if err := json.Unmarshal(buf, &errs); err != nil {
 			return nil, err
 		}
 
-		return nil, errs.Errors[0]
+		return nil, errs
 	}
 }

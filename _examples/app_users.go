@@ -17,7 +17,7 @@ func main() {
 		LastName:  "user",
 	})
 	if err != nil {
-		fmt.Println(err.Error())
+		handleError(err)
 		return
 	}
 
@@ -27,7 +27,7 @@ func main() {
 	data.RootAdmin = true
 	user, err = app.UpdateUser(user.ID, *data)
 	if err != nil {
-		fmt.Println(err.Error())
+		handleError(err)
 		return
 	}
 
@@ -35,7 +35,7 @@ func main() {
 
 	users, err := app.GetUsers()
 	if err != nil {
-		fmt.Println(err.Error())
+		handleError(err)
 		return
 	}
 
@@ -44,6 +44,16 @@ func main() {
 	}
 
 	if err = app.DeleteUser(user.ID); err != nil {
+		handleError(err)
+	}
+}
+
+func handleError(err error) {
+	if errs, ok := err.(*croc.ApiError); ok {
+		for _, e := range errs.Errors {
+			fmt.Println(e.Error())
+		}
+	} else {
 		fmt.Println(err.Error())
 	}
 }
