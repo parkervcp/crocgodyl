@@ -136,32 +136,40 @@ func (a *Application) GetServerExternal(id string) (*AppServer, error) {
 	return &model.Attributes, nil
 }
 
+type AllocationDescriptor struct {
+	Default    int   `json:"default"`
+	Additional []int `json:"additional,omitempty"`
+}
+
+type DeployDescriptor struct {
+	Locations   []int    `json:"locations"`
+	DedicatedIP bool     `json:"dedicated_ip"`
+	PortRange   []string `json:"port_range"`
+}
+
 type CreateServerDescriptor struct {
-	ExternalID    string                 `json:"external_id,omitempty"`
-	Name          string                 `json:"name"`
-	Description   string                 `json:"description,omitempty"`
-	User          int                    `json:"user"`
-	Egg           int                    `json:"egg"`
-	DockerImage   string                 `json:"docker_image"`
-	Startup       string                 `json:"startup"`
-	Environment   map[string]interface{} `json:"environment"`
-	SkipScripts   bool                   `json:"skip_scripts,omitempty"`
-	OOMDisabled   bool                   `json:"oom_disabled"`
-	Limits        Limits                 `json:"limits"`
-	FeatureLimtis FeatureLimits          `json:"feature_limits"`
-	Allocation    struct {
-		Default    int   `json:"default"`
-		Additional []int `json:"additional,omitempty"`
-	} `json:"allocation,omitempty"`
-	Deploy struct {
-		Locations   []int    `json:"location"`
-		DedicatedIP bool     `json:"dedicated_ip"`
-		PortRange   []string `json:"port_range"`
-	} `json:"deploy,omitempty"`
-	StartOnCompletion bool `json:"start_on_completion,omitempty"`
+	ExternalID        string                 `json:"external_id,omitempty"`
+	Name              string                 `json:"name"`
+	Description       string                 `json:"description,omitempty"`
+	User              int                    `json:"user"`
+	Egg               int                    `json:"egg"`
+	DockerImage       string                 `json:"docker_image"`
+	Startup           string                 `json:"startup"`
+	Environment       map[string]interface{} `json:"environment"`
+	SkipScripts       bool                   `json:"skip_scripts,omitempty"`
+	OOMDisabled       bool                   `json:"oom_disabled"`
+	Limits            *Limits                `json:"limits"`
+	FeatureLimtis     FeatureLimits          `json:"feature_limits"`
+	Allocation        *AllocationDescriptor  `json:"allocation,omitempty"`
+	Deploy            *DeployDescriptor      `json:"deploy,omitempty"`
+	StartOnCompletion bool                   `json:"start_on_completion,omitempty"`
 }
 
 func (a *Application) CreateServer(fields CreateServerDescriptor) (*AppServer, error) {
+	if fields.Allocation == nil && fields.Deploy == nil {
+		return nil, errors.New("the allocation object or deploy object must be specified")
+	}
+
 	data, _ := json.Marshal(fields)
 	body := bytes.Buffer{}
 	body.Write(data)
