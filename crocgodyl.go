@@ -95,10 +95,6 @@ func validate(res *http.Response) ([]byte, error) {
 		return nil, nil
 
 	default:
-		if res.ContentLength <= 0 {
-			return nil, fmt.Errorf("unknown error: %s", res.Status)
-		}
-
 		defer res.Body.Close()
 		buf, _ := io.ReadAll(res.Body)
 
