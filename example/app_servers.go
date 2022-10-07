@@ -21,8 +21,9 @@ func main() {
 			"GO_PACKAGE": "github.com/parkervcp/crocgodyl",
 			"EXECUTABLE": "crocgodyl",
 		},
-		Limits:        croc.Limits{1024, 0, 1024, 0, 1, "0", false},
+		Limits:        &croc.Limits{1024, 0, 1024, 10, 1, "0", false},
 		FeatureLimtis: croc.FeatureLimits{1, 0, 0},
+		Deploy:        &croc.DeployDescriptor{[]int{1, 2}, false, []string{}},
 	})
 	if err != nil {
 		fmt.Println(err.Error())
