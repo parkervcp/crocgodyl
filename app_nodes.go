@@ -231,21 +231,21 @@ func (a *Application) CreateNode(fields CreateNodeDescriptor) (*Node, error) {
 }
 
 type UpdateNodeDescriptor struct {
-	Name               string `json:"name,omitempty"`
-	Description        string `json:"description,omitempty"`
-	LocationID         int    `json:"location_id,omitempty"`
-	Public             bool   `json:"public,omitempty"`
-	FQDN               string `json:"fqdn,omitempty"`
-	Scheme             string `json:"scheme,omitempty"`
-	BehindProxy        bool   `json:"behind_proxy,omitempty"`
-	Memory             int64  `json:"memory,omitempty"`
-	MemoryOverallocate int64  `json:"memory_overallocate,omitempty"`
-	Disk               int64  `json:"disk,omitempty"`
-	DiskOverallocate   int64  `json:"disk_overallocate,omitempty"`
-	DaemonBase         string `json:"daemon_base,omitempty"`
-	DaemonSftp         int32  `json:"daemon_sftp,omitempty"`
-	DaemonListen       int32  `json:"daemon_listen,omitempty"`
-	UploadSize         int64  `json:"upload_size,omitempty"`
+	Name               string `json:"name"`
+	Description        string `json:"description"`
+	LocationID         int    `json:"location_id"`
+	Public             bool   `json:"public"`
+	FQDN               string `json:"fqdn"`
+	Scheme             string `json:"scheme"`
+	BehindProxy        bool   `json:"behind_proxy"`
+	Memory             int64  `json:"memory"`
+	MemoryOverallocate int64  `json:"memory_overallocate"`
+	Disk               int64  `json:"disk"`
+	DiskOverallocate   int64  `json:"disk_overallocate"`
+	DaemonBase         string `json:"daemon_base"`
+	DaemonSftp         int32  `json:"daemon_sftp"`
+	DaemonListen       int32  `json:"daemon_listen"`
+	UploadSize         int64  `json:"upload_size"`
 }
 
 func (a *Application) UpdateNode(id int, fields UpdateNodeDescriptor) (*Node, error) {
