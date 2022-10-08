@@ -30,7 +30,7 @@ func main() {
 		return
 	}
 
-	fmt.Printf("%v\n", server)
+	fmt.Printf("ID: %d - Name: %s - ExternalID: %s\n", server.ID, server.Name, server.ExternalID)
 
 	data := server.DetailsDescriptor()
 	data.ExternalID = "croc"
@@ -40,7 +40,7 @@ func main() {
 		return
 	}
 
-	fmt.Printf("external id: %s\n\n", server.ExternalID)
+	fmt.Printf("ID: %d - Name: %s - ExternalID: %s\n", server.ID, server.Name, server.ExternalID)
 
 	servers, err := app.GetServers()
 	if err != nil {
@@ -48,8 +48,8 @@ func main() {
 		return
 	}
 
-	for i, s := range servers {
-		fmt.Printf("%d: %d\n", i, s)
+	for _, s := range servers {
+		fmt.Printf("%d: %s\n", s.ID, s.Name)
 	}
 
 	if err = app.DeleteServer(server.ID, false); err != nil {

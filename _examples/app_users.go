@@ -21,7 +21,7 @@ func main() {
 		return
 	}
 
-	fmt.Printf("%v\n", user)
+	fmt.Printf("ID: %d - Name: %s - RootAdmin: %v\n", user.ID, user.Username, user.RootAdmin)
 
 	data := user.UpdateDescriptor()
 	data.RootAdmin = true
@@ -31,7 +31,7 @@ func main() {
 		return
 	}
 
-	fmt.Printf("root admin: %v\n\n", user.RootAdmin)
+	fmt.Printf("ID: %d - Name: %s - RootAdmin: %v\n", user.ID, user.Username, user.RootAdmin)
 
 	users, err := app.GetUsers()
 	if err != nil {
@@ -39,8 +39,8 @@ func main() {
 		return
 	}
 
-	for i, u := range users {
-		fmt.Printf("%d: %v\n", i, u)
+	for _, u := range users {
+		fmt.Printf("%d: %s\n", u.ID, u.Username)
 	}
 
 	if err = app.DeleteUser(user.ID); err != nil {
