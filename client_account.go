@@ -42,28 +42,31 @@ func (c *Client) GetAccount() (*Account, error) {
 	return &model.Attributes, nil
 }
 
-func (c *Client) GetTwoFactor() (string, error) {
+type TwoFactorData struct {
+	ImageURLData string `json:"image_url_data"`
+	Secret       string `json:"secret"`
+}
+
+func (c *Client) GetTwoFactor() (*TwoFactorData, error) {
 	req := c.newRequest("GET", "/account/two-factor", nil)
 	res, err := c.Http.Do(req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	buf, err := validate(res)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	var model struct {
-		Data struct {
-			URL string `json:"image_url_data"`
-		} `json:"data"`
+		Data TwoFactorData `json:"data"`
 	}
 	if err = json.Unmarshal(buf, &model); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return model.Data.URL, nil
+	return &model.Data, nil
 }
 
 func (c *Client) EnableTwoFactor(code int) ([]string, error) {
