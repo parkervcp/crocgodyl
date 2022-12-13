@@ -21,6 +21,7 @@ func main() {
 	}
 
 	if len(servers) == 0 {
+		fmt.Println("no servers to list")
 		return
 	}
 	server := servers[0]
