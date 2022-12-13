@@ -20,10 +20,11 @@ func main() {
 		fmt.Printf("%s (%d): %s\n", s.Identifier, s.InternalID, s.Name)
 	}
 
-	server := servers[0]
-	if server == nil {
+	if len(servers) == 0 {
+		fmt.Println("no servers to list")
 		return
 	}
+	server := servers[0]
 
 	if err = client.SetServerPowerState(server.Identifier, "restart"); err != nil {
 		handleError(err)
